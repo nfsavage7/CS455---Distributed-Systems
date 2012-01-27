@@ -4,7 +4,8 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
-//TODO 
+//TODO update this class to use hashmaps, threads, and the link class that is yet to be made.
+//Once the current functionality works like that go ahead and make the wire formats, also look at the wire format facotry. 
 
 public class Router {
 
