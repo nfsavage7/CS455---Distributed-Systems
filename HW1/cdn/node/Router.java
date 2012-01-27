@@ -4,9 +4,7 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
-//TODO Routers wait for connections, so I need to make them initate connections with eachother.
-//Presently, I'm thinking to use command line args to help with this, but there might be a better way.
-//May the force be with you!
+//TODO 
 
 public class Router {
 
