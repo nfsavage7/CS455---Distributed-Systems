@@ -48,12 +48,16 @@ public class Router {
 			Link l = new Link(sock);
 			RouterReceiveThread reader = new RouterReceiveThread(this, l);
 			reader.start();
-			while(!gotRI){}
+		//	while(!gotRI){}
+			try{
+				Thread.sleep(100);
+			} catch (Exception e) {System.out.println("hit");}
 			key = info.getID();
+			System.out.println(key);
 			links.put(key, l);
 			System.out.println("Connected to " + key);
 			return true;
-		} catch (Exception e){
+		} catch (IOException e){
 			System.out.println("Router::acceptConnections: port already in use");
 		}
 		return false;
@@ -62,6 +66,8 @@ public class Router {
 	public void initalizeConnection(int servPort, String servID){
 		try{
 			Link l = new Link(new Socket("localhost", servPort));
+			RouterReceiveThread reader = new RouterReceiveThread(this, l);
+			reader.start();
 			RouterInfo myInfo = new RouterInfo(ID, hostname, port);
 			l.sendData(myInfo);
 			links.put(servID, l);
@@ -82,8 +88,7 @@ public class Router {
 
 	public void gotRouterInfo(RouterInfo i){
 		info = i;
-		System.out.println(info);
-		gotRI = true;
+		key = i.getID();
 	}
 	
 	public void gotChatMessage(ChatMessage msg){

@@ -2,7 +2,7 @@ package cdn.wireformats;
 
 public class RouterInfo extends Message{
 
-	private int type = ROUTER_INFO;
+	private final int type = ROUTER_INFO;
 	private String ID;
 	private String hostname;
 	private int port;
@@ -27,6 +27,10 @@ public class RouterInfo extends Message{
 
 	public int getPort(){
 		return port;
+	}
+	
+	public int getType(){
+		return type;
 	}
 
 	public byte[] marshall(){

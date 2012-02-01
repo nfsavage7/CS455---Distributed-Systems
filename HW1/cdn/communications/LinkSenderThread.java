@@ -18,6 +18,9 @@ public class LinkSenderThread extends Thread{
 		synchronized(out){
 			try{
 				System.out.println("send " + data.length);
+				if(msg instanceof ChatMessage){
+					System.out.println("Type: " + ((ChatMessage)(msg)).getType());
+				}
 				out.write(data, 0, data.length);
 				out.flush();
 			} catch (IOException e){

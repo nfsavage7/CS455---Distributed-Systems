@@ -39,20 +39,16 @@ public class Link{
 		try{
 			LinkReaderThread reader = new LinkReaderThread(sock.getInputStream(), this);
 			reader.start();
-		} catch (IOException e){}
+			reader.join();
+		} catch (Exception e){}
 	}
 
 	public void setBytes(byte[] b){
 		bytes = b;
 		hasBytes = true;
-		System.out.println(hasBytes);
-		System.out.println("bytes.length = " + bytes.length);
 	}
 	
 	public byte[] getBytesReceived(){
-		System.out.println("getBYtes()");
-		//while(!hasBytes){}
-		System.out.println("Not here");
 		byte[] ret = bytes;
 		bytes = new byte[0];
 		hasBytes = false;

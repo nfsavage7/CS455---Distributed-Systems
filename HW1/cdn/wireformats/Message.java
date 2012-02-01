@@ -4,8 +4,6 @@ import java.nio.*;
 
 public abstract class Message{
 	
-	private int type = Message.NO_TYPE;
-	
 	/* Message Types */
 	public static final int NO_TYPE = 0;
 	public static final int ROUTER_INFO  = 1;
@@ -29,7 +27,7 @@ public abstract class Message{
 	}
 
 	public static int bytesToInt(byte[] bytes){
-		ByteBuffer buffer = ByteBuffer.allocate(Message.INT);
+		ByteBuffer buffer = ByteBuffer.allocateDirect(Message.INT);
 		for(int i = 0; i < bytes.length; i++){
 			buffer.put(bytes[i]);
 		}
@@ -45,12 +43,9 @@ public abstract class Message{
 	}
 
 
-	/* Inherited methods */
-	public int getType(){
-		return type;
-	}
 
 	/* Abstract methods */
+	public abstract int getType();
 	public abstract byte[] marshall();
 	public abstract void unmarshall(byte[] data);
 

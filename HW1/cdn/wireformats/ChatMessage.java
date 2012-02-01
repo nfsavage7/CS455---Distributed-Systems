@@ -3,7 +3,7 @@ package cdn.wireformats;
 public class ChatMessage extends Message{
 
 	private String payload;
-	private int type = Message.CHAT;
+	private final int type = Message.CHAT;
 
 	public ChatMessage(String p){
 		payload = p;
@@ -17,13 +17,18 @@ public class ChatMessage extends Message{
 		return payload;
 	}
 
+	public int getType(){
+		return type;
+	}
+
 	public byte[] marshall(){
 		byte[] ret = new byte[Message.INT + Message.INT + payload.length()];
 		
 		byte[] bytes = Message.intToBytes(type);
 		int index = Message.addBytes(0, ret, bytes);
+
 		bytes = Message.intToBytes(payload.length());
-		index = Message.addBytes(0, ret, bytes);
+		index = Message.addBytes(Message.INT, ret, bytes);
 
 		bytes = payload.getBytes();
 		index = Message.addBytes(index, ret, bytes);
@@ -35,7 +40,7 @@ public class ChatMessage extends Message{
 		byte[] bytes = Message.getBytes(Message.INT, Message.INT, data);
 		int len = Message.bytesToInt(bytes);
 
-		bytes = Message.getBytes(Message.INT, len, data);
+		bytes = Message.getBytes(Message.INT + Message.INT, len, data);
 		payload = new String(bytes);
 	}
 

@@ -26,7 +26,6 @@ public class LinkReaderThread extends Thread{
 		synchronized(din){
 			try{
 				din.readFully(msg);
-				System.out.println(msg.length);
 			} catch (IOException e){
 				System.out.println("LinkReaderThread: failed to read from input stream");
 				System.exit(1);
