@@ -18,6 +18,7 @@ public class Router {
 	private String hostname;
 	private int port;
 	private ServerSocket servSock;
+	private Link discovery;
 	private HashMap<String,Link> links = new HashMap<String,Link>();
 
 	//TODO Take this out, this is testing milestone 1 ONLY!!!!!!!
@@ -48,12 +49,10 @@ public class Router {
 			Link l = new Link(sock);
 			RouterReceiveThread reader = new RouterReceiveThread(this, l);
 			reader.start();
-		//	while(!gotRI){}
 			try{
 				Thread.sleep(100);
 			} catch (Exception e) {System.out.println("hit");}
 			key = info.getID();
-			System.out.println(key);
 			links.put(key, l);
 			System.out.println("Connected to " + key);
 			return true;
@@ -77,8 +76,13 @@ public class Router {
 			System.out.println("Router::initilizeConnection: something broke");
 		}
 	}
+
+	//TODO make the message, and send it to discovery
+	public void regWithDiscovery(String hostname, int port){
+		discovery = new Link(new Socket(hostname, port));
+		
+	}
 	
-	//TODO reamp for new design
 	public void sendMessage(String msg, String serv){
 		//TODO get Router send and receive working for chat application, then start adding in wireformats and the discovery node
 		ChatMessage message = new ChatMessage(msg);
