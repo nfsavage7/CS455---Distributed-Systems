@@ -90,4 +90,8 @@ public class RouterInfo extends Message{
 		bytes = Message.getBytes(index, Message.INT, data);
 		port = Message.bytesToInt(bytes);
 	}
+
+	public String toString(){
+		return "Router " + ID + " on port " + port + " on host " + hostname;
+	}
 }

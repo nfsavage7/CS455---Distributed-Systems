@@ -54,4 +54,8 @@ public class Link{
 		hasBytes = false;
 		return ret;
 	}
+
+	public String getHostname(){
+		return sock.getInetAddress().getHostName();
+	}
 }

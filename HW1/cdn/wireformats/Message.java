@@ -5,9 +5,11 @@ import java.nio.*;
 public abstract class Message{
 	
 	/* Message Types */
-	public static final int NO_TYPE = 0;
-	public static final int ROUTER_INFO  = 1;
-	public static final int CHAT = 2;
+	//public static final int NO_TYPE = 0;
+	public static final int CHAT = 0;
+	public static final int REGISTER_REQUEST = 1;
+	public static final int REGISTER_RESPONSE = 2;
+	public static final int ROUTER_INFO  = 3;
 
 	/* Constants for marshalling */
 	protected static final int INT = 4;
