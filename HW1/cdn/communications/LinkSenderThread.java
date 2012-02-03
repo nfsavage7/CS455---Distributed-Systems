@@ -5,22 +5,23 @@ import java.io.*;
 import cdn.wireformats.*;
 
 public class LinkSenderThread extends Thread{
+
+	/* Member vaiables */
 	private Message msg;
 	private DataOutputStream out;
 
+	/* Constructors */
 	public LinkSenderThread(Message m, OutputStream o){
 		msg = m;
 		out = new DataOutputStream(o);
 	}
 
+	/* Send method */
 	public void run(){
 		byte[] data = msg.marshall();
 		synchronized(out){
 			try{
 				System.out.println("send " + data.length);
-				if(msg instanceof ChatMessage){
-					System.out.println("Type: " + ((ChatMessage)(msg)).getType());
-				}
 				out.write(data, 0, data.length);
 				out.flush();
 			} catch (IOException e){

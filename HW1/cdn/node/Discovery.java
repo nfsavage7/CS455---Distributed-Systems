@@ -1,18 +1,22 @@
 package cdn.node;
 
+/* Java imports */
 import java.util.*;
 import java.net.*;
 import java.io.*;
 
+/* Local imports */
 import cdn.communications.*;
 import cdn.wireformats.*;
 
 public class Discovery {
 
+	/* Member vaiables */
 	private int port;
 	private ArrayList<Link> links = new ArrayList<Link>();
 	private ArrayList<RouterInfo> routers = new ArrayList<RouterInfo>();
 	
+	/* Constructors */
 	public Discovery(int p){
 		port = p;
 		try{
@@ -21,27 +25,23 @@ public class Discovery {
 		} catch (IOException e){
 			System.out.println("Discovery:failed to bind to server socket");
 		}
-		DiscoveryReceiverThread listener = new DiscoveryReceiverThread(links, this);
+		DiscoveryReceiverThread listener = new DiscoveryReceiverThread(this, links);
 		listener.start();
 	}
-
+	
+	/* Getter and setter methods */
 	public ArrayList<Link> getLinks(){
 		return links;
 	}
 
-	//TODO Might have to add link to routers as well *shrug* 
 	public void addLink(Link l){
 		links.add(l);
 	}
 
-/*
-	public Link getLink(String RouterID){
-			
-	}
-*/
 
 	/* These methods handle messages over the wire */
 	public void registerRouter(RegisterRequest request, Link l){
+		/* Store the router's info */
 		RouterInfo info = new RouterInfo(request.getID(), l.getHostname(), request.getPort());
 		routers.add(info);
 		System.out.println("Router " + routers.get(routers.size()-1).getID() + " is now registered.");
@@ -61,6 +61,7 @@ public class Discovery {
 		}
 	}
 
+	/* The main thread handles command line messages */
 	public static void main(String args[]){
 		Scanner in = new Scanner(args[0]);
 		Discovery discovery = new Discovery(in.nextInt());

@@ -1,48 +1,53 @@
 package cdn.communications;
 
+/* Java imports */
+import java.util.*;
+
+/* Local imports */
 import cdn.wireformats.*;
 import cdn.node.Router;
 
 public class RouterReceiveThread extends Thread{
 
+	/* Member variables */
 	private Router router;
-	private Link link;
+	private ArrayList<Link> links;
 	
-	public RouterReceiveThread(Router r, Link l){
+	/* Constructors */
+	public RouterReceiveThread(Router r, ArrayList<Link> l){
 		router = r;
-		link = l;
-		System.out.println("At least we spawned one xP");
+		links = l;
 	}
 
+	/* Receiver method */
 	public void run(){
-		System.out.println("Made it here Sir");
 		while(true){
-			if(link.hasMessage()){
-				link.receiveData();
-				while(!link.hasBytes){}
-				byte[] msg = link.getBytesReceived();
-				int type = Message.bytesToInt(Message.getBytes(0, 4, msg));
-				System.out.println("Type: " + type);
-				switch(type){
-					case Message.ROUTER_INFO:
-						router.gotRouterInfo(new RouterInfo(msg));
-						break;
-					case Message.CHAT:
-						router.gotChatMessage(new ChatMessage(msg));
-						break;
-					case Message.REGISTER_RESPONSE:
-						router.gotRegisterResponse(new RegisterResponse(msg));
-						break;
-					default:
-						System.out.println("Router::recvMessage: Type unsupported.");
-				}
+			for(int i = 0; i < links.size(); i++){
+				Link link = links.get(i);
+				if(link.hasMessage()){
+					link.receiveData();
+					byte[] msg = link.getBytesReceived();
+					int type = Message.bytesToInt(Message.getBytes(0, 4, msg));
+					switch(type){
+						case Message.ROUTER_INFO:
+							router.gotRouterInfo(new RouterInfo(msg));
+							break;
+						//TODO take this out once I have real packets to send
+						case Message.CHAT:
+							router.gotChatMessage(new ChatMessage(msg));
+							break;
+						case Message.REGISTER_RESPONSE:
+							router.gotRegisterResponse(new RegisterResponse(msg));
+							break;
+						default:
+							System.out.println("Router::recvMessage: Type unsupported.");
+					}
 
-			} else {
-				try{
-					Thread.sleep(50);
-				} catch (InterruptedException e){
-					continue;
 				}
+				links = router.getLinks();
+			}
+			if(links.size() == 0){
+				links = router.getLinks();
 			}
 		}
 	}

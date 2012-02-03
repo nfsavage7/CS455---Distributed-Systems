@@ -6,20 +6,36 @@ import java.io.*;
 import cdn.wireformats.*;
 
 public class Link{
-
+	
+	/* Member vaiables */
 	private Socket sock;
 	private byte[] bytes;
-	public static boolean hasBytes = false;
-
+	
+	/* Constructors */
 	public Link(Socket s){
 		sock = s;
 		bytes = new byte[0];
 	}
 
+	/* getter and setter methods */
+
 /*	public String setLinkId(String linkId){
 		info.setID(linkId);
 	}*/
 
+	public String getHostname(){
+		return sock.getInetAddress().getHostName();
+	}
+
+	/* send and helper methods methods */
+	public void sendData(Message msg){
+		try{
+			LinkSenderThread sender = new LinkSenderThread(msg, sock.getOutputStream());
+			sender.start();
+		} catch (IOException e){}
+	}
+	
+	/* Receive and helper methods*/
 	public boolean hasMessage(){
 		try{
 			return sock.getInputStream().available() > 0;
@@ -27,13 +43,7 @@ public class Link{
 			return false;
 		}
 	}
-	
-	public void sendData(Message msg){
-		try{
-			LinkSenderThread sender = new LinkSenderThread(msg, sock.getOutputStream());
-			sender.start();
-		} catch (IOException e){}
-	}
+
 
 	public void receiveData(){
 		try{
@@ -45,17 +55,11 @@ public class Link{
 
 	public void setBytes(byte[] b){
 		bytes = b;
-		hasBytes = true;
 	}
 	
 	public byte[] getBytesReceived(){
 		byte[] ret = bytes;
 		bytes = new byte[0];
-		hasBytes = false;
 		return ret;
-	}
-
-	public String getHostname(){
-		return sock.getInetAddress().getHostName();
 	}
 }

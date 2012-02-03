@@ -1,20 +1,25 @@
 package cdn.communications;
 
+/* Java imports */
 import java.util.*;
 
+/* Local imports */
 import cdn.wireformats.*;
 import cdn.node.Discovery;
 
 public class DiscoveryReceiverThread extends Thread{
 	
-	private ArrayList<Link> links;
+	/* Member vaiables */
 	private Discovery discovery;
+	private ArrayList<Link> links;
 	
-	public DiscoveryReceiverThread(ArrayList<Link> l, Discovery d){
-		links = l;
+	/* Constructors */
+	public DiscoveryReceiverThread(Discovery d, ArrayList<Link> l){
 		discovery = d;
+		links = l;
 	}
 
+	/* Receiver method */
 	public void run(){
 		while(true){
 			for(int i = 0; i < links.size(); i++){
@@ -32,7 +37,7 @@ public class DiscoveryReceiverThread extends Thread{
 							break;
 					}
 				}
-			links = discovery.getLinks();
+				links = discovery.getLinks();
 			}
 			if(links.size() == 0){
 				links = discovery.getLinks();

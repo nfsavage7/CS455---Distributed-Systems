@@ -1,71 +1,67 @@
 package cdn.node;
 
+/* Java imports */
 import java.util.*;
 import java.io.*;
 import java.net.*;
 
+/* Local imports */
 import cdn.communications.Link;
 import cdn.communications.RouterReceiveThread;
+import cdn.communications.ConnectionAccepterThread;
 import cdn.wireformats.*;
 
-//TODO take out wire fromats from Router and Link, then figure out how you wnat to lable links
-//Once the current functionality works like that go ahead and make the wire formats, also look at the wire format facotry. 
 
 public class Router {
 	
+	/* Member variables */
 	private String ID;
 	private String hostname;
 	private int port;
-	private ServerSocket servSock;
 	private Link discovery;
-	private HashMap<String,Link> links = new HashMap<String,Link>();
+	private ArrayList<Link> links = new ArrayList<Link>();
 
-	//TODO Take this out, this is testing milestone 1 ONLY!!!!!!!
-	private String key;
-	private RouterInfo info;
-	private boolean gotRI = false;
-
-	public Router(String id, String hn, int p){
+	/* Constructors  and other inital methods */
+	public Router(String id, String hn, int p, String discoveryHN, int discoveryPort){
 		ID = id;
 		hostname = hn;
 		port = p;
 		try{
-			servSock = new ServerSocket(port);
+			ConnectionAccepterThread accepter = new ConnectionAccepterThread(new ServerSocket(port), this);
+			accepter.start();
 		} catch (IOException e){}
+		reqWithDiscovery(discoveryHN, discoveryPort);
 	}
 
-	//TODO TAKE THIS OUT this is testing for milestone 1
-	public String getKey(){
-		return key;
-	}
-	
-	public boolean acceptConnections(){
+	public void regWithDiscovery(String hn, int p){
 		try{
-			Socket sock = servSock.accept();
-			Link l = new Link(sock);
-			RouterReceiveThread reader = new RouterReceiveThread(this, l);
-			reader.start();
-			try{
-				Thread.sleep(100);
-			} catch (Exception e) {System.out.println("hit");}
-			key = info.getID();
-			links.put(key, l);
-			System.out.println("Connected to " + key);
-			return true;
-		} catch (IOException e){
-			System.out.println("Router::acceptConnections: port already in use");
-		}
-		return false;
+			discovery = new Link(new Socket(hn, p));
+		}catch(Exception e) {e.printStackTrace();}
+		links.add(discovery);
+		RouterReceiveThread reader = new RouterReceiveThread(this, links);
+		reader.start();
+		String IP = servSock.getInetAddress().toString();
+		RegisterRequest request = new RegisterRequest(IP, port, ID);
+		discovery.sendData(request);
+	}
+
+	/* THese are all of the getter and setter methods */
+	public ArrayList<Link> getLinks(){
+		return links;
+	}
+
+	public void addLink(Link l){
+		links.add(l);
 	}
 	
 	public void initalizeConnection(int servPort, String servID){
 		try{
 			Link l = new Link(new Socket("localhost", servPort));
-			RouterReceiveThread reader = new RouterReceiveThread(this, l);
+			links.add(l);
+			RouterReceiveThread reader = new RouterReceiveThread(this, links);
 			reader.start();
 			RouterInfo myInfo = new RouterInfo(ID, hostname, port);
 			l.sendData(myInfo);
-			links.put(servID, l);
 			key = servID;
 			System.out.println("Connected to " + servID);
 		} catch (Exception e) {
@@ -73,33 +69,16 @@ public class Router {
 		}
 	}
 
-	//TODO make the message, and send it to discovery
-	public void regWithDiscovery(String hn, int p){
-		try{
-			discovery = new Link(new Socket(hn, p));
-		}catch(Exception e) {e.printStackTrace();}
-		RouterReceiveThread reader = new RouterReceiveThread(this, discovery);
-		reader.start();
-		String IP = servSock.getInetAddress().toString();
-		RegisterRequest request = new RegisterRequest(IP, port, ID);
-		discovery.sendData(request);
-	}
 
-	//TODO honestly, probably kill this lolz	
-	public void sendMessage(String msg, String serv){
-		ChatMessage message = new ChatMessage(msg);
-		Link l = links.get(serv);
-		l.sendData(message);
-	}
 
 	/* Message handling methods */	
-	//TODO see above todo lolz
+	//TODO see below todo lolz
 	public void gotRouterInfo(RouterInfo i){
 		info = i;
 		key = i.getID();
 	}
 	
-	//TODO see above todo lolz
+	//TODO take this out once I have real data
 	public void gotChatMessage(ChatMessage msg){
 		System.out.println(msg.getPayload());
 	}
@@ -107,17 +86,18 @@ public class Router {
 	public void gotRegisterResponse(RegisterResponse msg){
 		System.out.println(msg.getInfo());
 	}
-	//This main makes me want to vomit. Might as well as write the real main now anyways
+
+	/* The main thread hands command line messages */
 	public static void main(String args[]){
 		Scanner in = new Scanner(args[1]);
-		Router router = new Router(args[0], "localhost", in.nextInt());
+		int port = in.nextInt();
 		in = new Scanner(args[3]);
-		router.regWithDiscovery(args[2], in.nextInt()); 
+		int discoveryPort = in.nextInt();
+		Router router = new Router(args[0], "localhost", port, args[2], discoveryPort);
 		
-		//ATTEMPT AT COMMAND LINE READING lolz
 		in = new Scanner(System.in);
 		while(in.hasNextLine()){
-			//router.sendMessage(in.nextLine(), router.getKey());
+			//TODO add in router commands
 		}
 
 	}
