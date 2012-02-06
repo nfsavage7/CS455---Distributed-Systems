@@ -9,7 +9,9 @@ public abstract class Message{
 	public static final int CHAT = 0;
 	public static final int REGISTER_REQUEST = 1;
 	public static final int REGISTER_RESPONSE = 2;
-	public static final int ROUTER_INFO  = 3;
+	public static final int DEREGISTER_REQUEST = 3;
+	public static final int ROUTER_INFO  = 4;
+	public static final int PEER_ROUTER_LIST = 5;
 
 	/* Constants for marshalling */
 	protected static final int INT = 4;

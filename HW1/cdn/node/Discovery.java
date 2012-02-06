@@ -15,6 +15,7 @@ public class Discovery {
 	private int port;
 	private ArrayList<Link> links = new ArrayList<Link>();
 	private ArrayList<RouterInfo> routers = new ArrayList<RouterInfo>();
+	private HashMap<String, ArrayList<RouterInfo>> connections = new HashMap<String, ArrayList<RouterInfo>>();
 	
 	/* Constructors */
 	public Discovery(int p){
@@ -45,6 +46,7 @@ public class Discovery {
 		RouterInfo info = new RouterInfo(request.getID(), l.getHostname(), request.getPort());
 		routers.add(info);
 		System.out.println("Router " + routers.get(routers.size()-1).getID() + " is now registered.");
+		l.setID(request.getID());
 
 		/* Now reply */
 		byte status = 0; // sucess!
@@ -53,12 +55,70 @@ public class Discovery {
 		l.sendData(response);
 	}
 
+	public void deregisterRouter(DeregisterRequest request, Link l){
+		/* remove the router's info from the list */
+		int index = 0;
+		for(int i = 0; i < routers.size(); i++){
+			if(routers.get(i).getID().equals(request.getID())){
+				routers.remove(i);
+				index = i;
+				break;
+			}
+		}
+		/* remove the active link */
+		links.get(index).close();
+		links.remove(index);
+	}
+
 	/* These methods handle command line messages */
 	public void printRouterInfo(){
 		System.out.println(routers.size());
 		for(int i = 0; i < routers.size(); i++){
 			System.out.println(routers.get(i));
 		}
+	}
+
+	//TODO check for islands somehow!
+	public void setupCDN(){
+		for(int i = 0; i < links.size(); i++){
+			System.out.println("hit");
+			Random rand = new Random();
+			ArrayList<RouterInfo> peers = new ArrayList<RouterInfo>();
+			Link l = links.get(i);
+			System.out.println("Working on router " + l.getID());
+			if(connections.containsKey(l.getID())){
+				peers = connections.get(l.getID());
+				if(peers.size() == 2){
+					continue;
+				}
+			}
+			while(peers.size() != 2){
+				int router = rand.nextInt(links.size());
+				//if peer is not already a peer and I am not peer
+				if(!peers.contains(routers.get(router)) && !routers.get(router).getID().equals(l.getID())){
+					ArrayList<RouterInfo> hisPeers = new ArrayList<RouterInfo>();
+					if(connections.containsKey(l.getID())){
+						hisPeers = connections.get(l.getID());
+						if(hisPeers.size() == 2){
+							continue;
+						}
+					}
+					peers.add(routers.get(router));
+					hisPeers.add(routers.get(i));
+					connections.put(routers.get(router).getID(), hisPeers);
+				}
+			}
+			connections.put(l.getID(), peers);
+			/* Contact the Routers */
+			PeerRouterList list = new PeerRouterList(peers);
+			System.out.println("Set up the CDN.");
+			for(int j = 0; j < peers.size(); j ++){
+				System.out.print( peers.get(j).getID() + " " );
+			}
+			System.out.print("\n");
+			//l.sendData(list);
+		}
+
 	}
 
 	/* The main thread handles command line messages */
@@ -70,6 +130,8 @@ public class Discovery {
 		while(in.hasNextLine()){
 			if(in.nextLine().equals("list-routers")){
 				discovery.printRouterInfo();
+			} else if (in.nextLine().equals("setup-cdn")){
+				discovery.setupCDN();
 			} else {
 				System.out.println("Command unrecognized");
 			}

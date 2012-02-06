@@ -16,6 +16,7 @@ public class Router {
 	
 	/* Member variables */
 	private String ID;
+	private String IP;
 	private String hostname;
 	private int port;
 	private Link discovery;
@@ -27,10 +28,12 @@ public class Router {
 		hostname = hn;
 		port = p;
 		try{
-			ConnectionAccepterThread accepter = new ConnectionAccepterThread(new ServerSocket(port), this);
+			ServerSocket serv = new ServerSocket(port);
+			IP = serv.getInetAddress().toString();
+			ConnectionAccepterThread accepter = new ConnectionAccepterThread(serv, this);
 			accepter.start();
 		} catch (IOException e){}
-		reqWithDiscovery(discoveryHN, discoveryPort);
+		regWithDiscovery(discoveryHN, discoveryPort);
 	}
 
 	public void regWithDiscovery(String hn, int p){
@@ -40,7 +43,6 @@ public class Router {
 		links.add(discovery);
 		RouterReceiveThread reader = new RouterReceiveThread(this, links);
 		reader.start();
-		String IP = servSock.getInetAddress().toString();
 		RegisterRequest request = new RegisterRequest(IP, port, ID);
 		discovery.sendData(request);
 	}
@@ -62,20 +64,20 @@ public class Router {
 			reader.start();
 			RouterInfo myInfo = new RouterInfo(ID, hostname, port);
 			l.sendData(myInfo);
-			key = servID;
 			System.out.println("Connected to " + servID);
 		} catch (Exception e) {
 			System.out.println("Router::initilizeConnection: something broke");
 		}
 	}
 
-
+	public void deregister(){
+		discovery.sendData(new DeregisterRequest(IP, port, ID));
+	}
 
 	/* Message handling methods */	
 	//TODO see below todo lolz
 	public void gotRouterInfo(RouterInfo i){
-		info = i;
-		key = i.getID();
+		System.out.println("Router::gotRouterInfo: implement this.");
 	}
 	
 	//TODO take this out once I have real data
@@ -98,6 +100,10 @@ public class Router {
 		in = new Scanner(System.in);
 		while(in.hasNextLine()){
 			//TODO add in router commands
+			String cmd = in.nextLine();
+			if(cmd.equals("exit-cdn")){
+				router.deregister();
+			}
 		}
 
 	}

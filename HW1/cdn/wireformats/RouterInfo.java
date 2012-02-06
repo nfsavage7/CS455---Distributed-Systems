@@ -32,6 +32,10 @@ public class RouterInfo extends Message{
 	public int getType(){
 		return type;
 	}
+	
+	public int sizeOf(){
+		return Message.INT+Message.INT+ID.length()+Message.INT+hostname.length()+Message.INT;
+	}
 
 	public byte[] marshall(){
 		//4 for the type, 4 for the length of the ID, 4 for the length of the hostname, and 4 for the port number. I swear I'm not crazy

@@ -32,6 +32,10 @@ public class DiscoveryReceiverThread extends Thread{
 						case Message.REGISTER_REQUEST:
 							discovery.registerRouter( new RegisterRequest(msg), l);
 							break;
+						case Message.DEREGISTER_REQUEST:
+							discovery.deregisterRouter( new DeregisterRequest(msg), l);
+							//links.remove(links.indexOf(l));
+							break;
 						default:
 							System.out.println("Message type unsupported");
 							break;

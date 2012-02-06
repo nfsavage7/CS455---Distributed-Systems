@@ -10,6 +10,7 @@ public class Link{
 	/* Member vaiables */
 	private Socket sock;
 	private byte[] bytes;
+	private String ID;
 	
 	/* Constructors */
 	public Link(Socket s){
@@ -19,9 +20,13 @@ public class Link{
 
 	/* getter and setter methods */
 
-/*	public String setLinkId(String linkId){
-		info.setID(linkId);
-	}*/
+	public void setID(String id){
+		ID = id;
+	}
+
+	public String getID(){
+		return ID;
+	}
 
 	public String getHostname(){
 		return sock.getInetAddress().getHostName();
@@ -61,5 +66,12 @@ public class Link{
 		byte[] ret = bytes;
 		bytes = new byte[0];
 		return ret;
+	}
+
+	/* terminate the link */
+	public void close(){
+		try{
+			sock.close();
+		} catch(Exception e) {}
 	}
 }
