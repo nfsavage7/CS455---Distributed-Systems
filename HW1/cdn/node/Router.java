@@ -56,9 +56,10 @@ public class Router {
 		links.add(l);
 	}
 	
-	public void initalizeConnection(int servPort, String servID){
+	//TODO try to streamline this and regWithDiscovery
+	public void initalizeConnection(String host, int servPort, String servID){
 		try{
-			Link l = new Link(new Socket("localhost", servPort));
+			Link l = new Link(new Socket(host, servPort));
 			links.add(l);
 			RouterReceiveThread reader = new RouterReceiveThread(this, links);
 			reader.start();
@@ -87,6 +88,14 @@ public class Router {
 	
 	public void gotRegisterResponse(RegisterResponse msg){
 		System.out.println(msg.getInfo());
+	}
+
+	public void connectToPeers(PeerRouterList msg){
+		ArrayList<RouterInfo> peers = msg.getPeers();
+		for(int i = 0; i < peers.size(); i++){
+			RouterInfo peer = peers.get(i);
+			initalizeConnection(peer.getHostName(), peer.getPort(), peer.getID());
+		}
 	}
 
 	/* The main thread hands command line messages */

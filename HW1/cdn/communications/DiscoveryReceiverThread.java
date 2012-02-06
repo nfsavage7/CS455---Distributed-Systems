@@ -24,6 +24,11 @@ public class DiscoveryReceiverThread extends Thread{
 		while(true){
 			for(int i = 0; i < links.size(); i++){
 				Link l = links.get(i);
+				if(l == null){
+					//TODO take me out
+					System.out.println("Null thing");
+					break;
+				}
 				if(l.hasMessage()){
 					l.receiveData();
 					byte[] msg = l.getBytesReceived();
@@ -34,7 +39,7 @@ public class DiscoveryReceiverThread extends Thread{
 							break;
 						case Message.DEREGISTER_REQUEST:
 							discovery.deregisterRouter( new DeregisterRequest(msg), l);
-							//links.remove(links.indexOf(l));
+							links.remove(links.indexOf(l));
 							break;
 						default:
 							System.out.println("Message type unsupported");

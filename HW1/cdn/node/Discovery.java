@@ -72,7 +72,6 @@ public class Discovery {
 
 	/* These methods handle command line messages */
 	public void printRouterInfo(){
-		System.out.println(routers.size());
 		for(int i = 0; i < routers.size(); i++){
 			System.out.println(routers.get(i));
 		}
@@ -81,11 +80,9 @@ public class Discovery {
 	//TODO check for islands somehow!
 	public void setupCDN(){
 		for(int i = 0; i < links.size(); i++){
-			System.out.println("hit");
 			Random rand = new Random();
 			ArrayList<RouterInfo> peers = new ArrayList<RouterInfo>();
 			Link l = links.get(i);
-			System.out.println("Working on router " + l.getID());
 			if(connections.containsKey(l.getID())){
 				peers = connections.get(l.getID());
 				if(peers.size() == 2){
@@ -98,7 +95,7 @@ public class Discovery {
 				if(!peers.contains(routers.get(router)) && !routers.get(router).getID().equals(l.getID())){
 					ArrayList<RouterInfo> hisPeers = new ArrayList<RouterInfo>();
 					if(connections.containsKey(l.getID())){
-						hisPeers = connections.get(l.getID());
+						hisPeers = connections.get(routers.get(router).getID());
 						if(hisPeers.size() == 2){
 							continue;
 						}
@@ -108,15 +105,15 @@ public class Discovery {
 					connections.put(routers.get(router).getID(), hisPeers);
 				}
 			}
+			System.out.println("Connections for router " + l.getID());
 			connections.put(l.getID(), peers);
 			/* Contact the Routers */
 			PeerRouterList list = new PeerRouterList(peers);
-			System.out.println("Set up the CDN.");
 			for(int j = 0; j < peers.size(); j ++){
 				System.out.print( peers.get(j).getID() + " " );
 			}
 			System.out.print("\n");
-			//l.sendData(list);
+			l.sendData(list);
 		}
 
 	}
@@ -128,10 +125,13 @@ public class Discovery {
 
 		in = new Scanner(System.in);
 		while(in.hasNextLine()){
-			if(in.nextLine().equals("list-routers")){
+			String cmd = in.nextLine();
+			if(cmd.equals("list-routers")){
 				discovery.printRouterInfo();
-			} else if (in.nextLine().equals("setup-cdn")){
+			} else if (cmd.equals("setup-cdn")){
+				System.out.println("Working on it boss");
 				discovery.setupCDN();
+				System.out.println("Done with the CDN, Sir");
 			} else {
 				System.out.println("Command unrecognized");
 			}
