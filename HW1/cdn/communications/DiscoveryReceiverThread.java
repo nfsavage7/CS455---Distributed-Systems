@@ -12,16 +12,24 @@ public class DiscoveryReceiverThread extends Thread{
 	/* Member vaiables */
 	private Discovery discovery;
 	private ArrayList<Link> links;
+	private boolean stop = false;
+	private boolean finished = false;
 	
 	/* Constructors */
 	public DiscoveryReceiverThread(Discovery d, ArrayList<Link> l){
 		discovery = d;
 		links = l;
 	}
+	
+	public void halt(){
+		stop = true;
+		while(!finished){}
+		System.out.println("Done");
+	}
 
 	/* Receiver method */
 	public void run(){
-		while(true){
+		while(!stop){
 			for(int i = 0; i < links.size(); i++){
 				Link l = links.get(i);
 				if(l == null){
@@ -32,6 +40,7 @@ public class DiscoveryReceiverThread extends Thread{
 				if(l.hasMessage()){
 					l.receiveData();
 					byte[] msg = l.getBytesReceived();
+					System.out.println("Got " + msg.length);
 					int type = Message.bytesToInt(Message.getBytes(0, 4, msg));
 					switch(type){
 						case Message.REGISTER_REQUEST:
@@ -52,5 +61,6 @@ public class DiscoveryReceiverThread extends Thread{
 				links = discovery.getLinks();
 			}
 		}
+		finished = true;
 	}
 }

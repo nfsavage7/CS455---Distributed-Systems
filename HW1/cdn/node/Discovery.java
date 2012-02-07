@@ -16,6 +16,7 @@ public class Discovery {
 	private ArrayList<Link> links = new ArrayList<Link>();
 	private ArrayList<RouterInfo> routers = new ArrayList<RouterInfo>();
 	private HashMap<String, ArrayList<RouterInfo>> connections = new HashMap<String, ArrayList<RouterInfo>>();
+	private DiscoveryReceiverThread listener;
 	
 	/* Constructors */
 	public Discovery(int p){
@@ -23,11 +24,12 @@ public class Discovery {
 		try{
 			ConnectionAccepterThread accepter = new ConnectionAccepterThread(new ServerSocket(port), this);
 			accepter.start();
-		} catch (IOException e){
+			accepter.join();
+		} catch (Exception e){
 			System.out.println("Discovery:failed to bind to server socket");
 		}
-		DiscoveryReceiverThread listener = new DiscoveryReceiverThread(this, links);
-		listener.start();
+	//	listener = new DiscoveryReceiverThread(this, links);
+	//	listener.start();
 	}
 	
 	/* Getter and setter methods */
@@ -37,6 +39,12 @@ public class Discovery {
 
 	public void addLink(Link l){
 		links.add(l);
+		if(listener != null){
+			listener.interrupt();
+			listener.halt();
+		}
+		listener = new DiscoveryReceiverThread(this, links);
+		listener.start();
 	}
 
 
@@ -74,6 +82,12 @@ public class Discovery {
 	public void printRouterInfo(){
 		for(int i = 0; i < routers.size(); i++){
 			System.out.println(routers.get(i));
+		}
+	}
+	
+	public void close(){
+		for(int i = 0; i < links.size(); i++){
+			links.get(i).close();
 		}
 	}
 
@@ -132,6 +146,9 @@ public class Discovery {
 				System.out.println("Working on it boss");
 				discovery.setupCDN();
 				System.out.println("Done with the CDN, Sir");
+			} else if (cmd.equals("close")){
+				discovery.close();
+				break;
 			} else {
 				System.out.println("Command unrecognized");
 			}
