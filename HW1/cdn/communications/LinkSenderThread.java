@@ -1,6 +1,7 @@
 package cdn.communications;
 
 import java.io.*;
+import java.net.*;
 
 import cdn.wireformats.*;
 
@@ -8,18 +9,22 @@ public class LinkSenderThread extends Thread{
 
 	/* Member vaiables */
 	private Message msg;
+	private Socket sock;
 	private DataOutputStream out;
 
 	/* Constructors */
-	public LinkSenderThread(Message m, OutputStream o){
+	public LinkSenderThread(Message m, Socket s){
 		msg = m;
-		out = new DataOutputStream(o);
+		sock = s;
+		try{
+			out = new DataOutputStream(s.getOutputStream());
+		} catch (Exception e){}
 	}
 
 	/* Send method */
 	public void run(){
 		byte[] data = msg.marshall();
-		synchronized(out){
+		synchronized(sock){
 			try{
 				System.out.println("send " + data.length);
 				out.write(data, 0, data.length);

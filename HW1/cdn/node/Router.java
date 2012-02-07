@@ -80,6 +80,12 @@ public class Router {
 	public void gotRouterInfo(RouterInfo i){
 		System.out.println("Router::gotRouterInfo: implement this.");
 	}
+
+	public void flood(ChatMessage msg){
+		for(int i = 0; i < links.size(); i++){
+			links.get(i).sendData(msg);
+		}
+	}
 	
 	//TODO take this out once I have real data
 	public void gotChatMessage(ChatMessage msg){
@@ -112,6 +118,8 @@ public class Router {
 			String cmd = in.nextLine();
 			if(cmd.equals("exit-cdn")){
 				router.deregister();
+			} else {
+				router.flood(new ChatMessage(cmd));
 			}
 		}
 

@@ -32,6 +32,9 @@ public class RouterReceiveThread extends Thread{
 				if(link.hasMessage()){
 					link.receiveData();
 					byte[] msg = link.getBytesReceived();
+					if(msg.length < 4){
+						break;
+					}
 					int type = Message.bytesToInt(Message.getBytes(0, 4, msg));
 					switch(type){
 						case Message.ROUTER_INFO:

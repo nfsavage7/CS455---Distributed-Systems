@@ -34,28 +34,35 @@ public class Link{
 
 	/* send and helper methods methods */
 	public void sendData(Message msg){
-		try{
-			LinkSenderThread sender = new LinkSenderThread(msg, sock.getOutputStream());
-			sender.start();
-		} catch (IOException e){}
+		//synchronized(sock){
+			try{
+				LinkSenderThread sender = new LinkSenderThread(msg, sock);
+				sender.start();
+				sender.join();
+			} catch (Exception e){}
+		//}
 	}
 	
 	/* Receive and helper methods*/
 	public boolean hasMessage(){
-		try{
-			return sock.getInputStream().available() > 0;
-		} catch (IOException e){
-			return false;
+		synchronized(sock){
+			try{
+				return sock.getInputStream().available() > 0;
+			} catch (IOException e){
+				return false;
+			}
 		}
 	}
 
 
 	public void receiveData(){
-		try{
-			LinkReaderThread reader = new LinkReaderThread(sock.getInputStream(), this);
-			reader.start();
-			reader.join();
-		} catch (Exception e){}
+		//synchronized(sock){
+			try{
+				LinkReaderThread reader = new LinkReaderThread(sock, this);
+				reader.start();
+				reader.join();
+			} catch (Exception e){}
+		//}
 	}
 
 	public void setBytes(byte[] b){

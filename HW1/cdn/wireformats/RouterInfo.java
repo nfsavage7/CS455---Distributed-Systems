@@ -74,30 +74,25 @@ public class RouterInfo extends Message{
 		byte[] bytes = Message.getBytes(index, Message.INT, data);
 		int IDlen = Message.bytesToInt(bytes);
 		index += Message.INT;
-		System.out.println("IDLEN: " + IDlen);
 
 		//Unmarshall ID
 		bytes = Message.getBytes(index, IDlen, data);
 		ID = new String(bytes);
 		index += IDlen;
-		System.out.println("ID: " + ID);
 
 		//Unmarshall length of the hostname
 		bytes = Message.getBytes(index, Message.INT, data);
 		int hostnameLen = Message.bytesToInt(bytes);
 		index += Message.INT;
-		System.out.println("hostnameLen: " + hostnameLen); 
 
 		//Unmarshall hostname
 		bytes = Message.getBytes(index, hostnameLen, data);
 		hostname = new String(bytes);
 		index += hostnameLen;
-		System.out.println("hostname: " + hostname);
 
 		//Unmarshall port
 		bytes = Message.getBytes(index, Message.INT, data);
 		port = Message.bytesToInt(bytes);
-		System.out.println("port: " + port);
 	}
 
 	public String toString(){
