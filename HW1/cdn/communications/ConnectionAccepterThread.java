@@ -43,7 +43,6 @@ public class ConnectionAccepterThread extends Thread{
 		while(true){
 			try{
 				Link l = new Link(servSock.accept());
-				System.out.println("Got the connection");
 				discovery.addLink(l);
 			} catch (IOException e){
 				System.out.println("ConnectionAccepterThread::discoveryRun: could not open socket.");

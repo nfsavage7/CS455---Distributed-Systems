@@ -99,6 +99,7 @@ public class Discovery {
 					continue;
 				}
 			}
+			ArrayList<RouterInfo> peersToSend = new ArrayList<RouterInfo>();
 			while(peers.size() != 2){
 				int router = rand.nextInt(links.size());
 				//if peer is not already a peer and I am not peer
@@ -106,11 +107,12 @@ public class Discovery {
 					ArrayList<RouterInfo> hisPeers = new ArrayList<RouterInfo>();
 					if(connections.containsKey(l.getID())){
 						hisPeers = connections.get(routers.get(router).getID());
-						if(hisPeers.size() == 2){
+						if(hisPeers.size() == 2 || hisPeers.contains(l.getID())){
 							continue;
 						}
 					}
 					peers.add(routers.get(router));
+					peersToSend.add(routers.get(router));
 					hisPeers.add(routers.get(i));
 					connections.put(routers.get(router).getID(), hisPeers);
 				}
@@ -118,12 +120,14 @@ public class Discovery {
 			System.out.println("Connections for router " + l.getID());
 			connections.put(l.getID(), peers);
 			/* Contact the Routers */
-			PeerRouterList list = new PeerRouterList(peers);
+			if(peersToSend.size() > 0 ){
+				PeerRouterList list = new PeerRouterList(peersToSend);
+				l.sendData(list);
+			}
 			for(int j = 0; j < peers.size(); j ++){
 				System.out.print( peers.get(j).getID() + " " );
 			}
 			System.out.print("\n");
-			l.sendData(list);
 		}
 
 	}

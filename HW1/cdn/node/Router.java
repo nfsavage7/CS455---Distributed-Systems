@@ -75,13 +75,13 @@ public class Router {
 	}
 
 	/* Message handling methods */	
-	//TODO see below todo lolz
 	public void gotRouterInfo(RouterInfo i){
-		System.out.println("Router::gotRouterInfo: implement this.");
+		//TODO Right here Boss!
+		//Honestly, I'm not sure I need this...
 	}
 
 	public void flood(ChatMessage msg){
-		for(int i = 0; i < links.size(); i++){
+		for(int i = 1; i < links.size(); i++){
 			links.get(i).sendData(msg);
 		}
 	}

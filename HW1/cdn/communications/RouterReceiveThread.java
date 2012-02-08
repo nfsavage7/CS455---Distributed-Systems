@@ -22,7 +22,6 @@ public class RouterReceiveThread extends Thread{
 
 	/* Receiver method */
 	public void run(){
-		System.out.println("waitin' on data Boss");
 		while(true){
 			for(int i = 0; i < links.size(); i++){
 				Link link = links.get(i);
