@@ -17,16 +17,16 @@ public class RouterReceiveThread extends Thread{
 	public RouterReceiveThread(Router r, ArrayList<Link> l){
 		router = r;
 		links = l;
+		this.start();
 	}
 
 	/* Receiver method */
 	public void run(){
+		System.out.println("waitin' on data Boss");
 		while(true){
 			for(int i = 0; i < links.size(); i++){
 				Link link = links.get(i);
 				if(link == null){
-					//TODO take me out
-					System.out.println("I was right");
 					break;
 				}
 				if(link.hasMessage()){
@@ -38,7 +38,6 @@ public class RouterReceiveThread extends Thread{
 					int type = Message.bytesToInt(Message.getBytes(0, 4, msg));
 					switch(type){
 						case Message.ROUTER_INFO:
-							System.out.println("ROUTER_INFO");
 							router.gotRouterInfo(new RouterInfo(msg));
 							break;
 						//TODO take this out once I have real packets to send
@@ -49,18 +48,14 @@ public class RouterReceiveThread extends Thread{
 							router.gotRegisterResponse(new RegisterResponse(msg));
 							break;
 						case Message.PEER_ROUTER_LIST:
-							System.out.println("HIT HERE");
 							router.connectToPeers(new PeerRouterList(msg));
 							break;
 						default:
 							System.out.println("Router::recvMessage: Type unsupported.");
+							break;
 					}
 
 				}
-				links = router.getLinks();
-			}
-			if(links.size() == 0){
-				links = router.getLinks();
 			}
 		}
 	}

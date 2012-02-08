@@ -21,6 +21,7 @@ public class Router {
 	private int port;
 	private Link discovery;
 	private ArrayList<Link> links = new ArrayList<Link>();
+	private	RouterReceiveThread reader;
 
 	/* Constructors  and other inital methods */
 	public Router(String id, String hn, int p, String discoveryHN, int discoveryPort){
@@ -41,8 +42,7 @@ public class Router {
 			discovery = new Link(new Socket(hn, p));
 		}catch(Exception e) {e.printStackTrace();}
 		links.add(discovery);
-		RouterReceiveThread reader = new RouterReceiveThread(this, links);
-		reader.start();
+		reader = new RouterReceiveThread(this, links);
 		RegisterRequest request = new RegisterRequest(IP, port, ID);
 		discovery.sendData(request);
 	}
@@ -62,7 +62,6 @@ public class Router {
 			Link l = new Link(new Socket(host, servPort));
 			links.add(l);
 			RouterReceiveThread reader = new RouterReceiveThread(this, links);
-			reader.start();
 			RouterInfo myInfo = new RouterInfo(ID, hostname, port);
 			l.sendData(myInfo);
 			System.out.println("Connected to " + servID);

@@ -45,13 +45,21 @@ public class Link{
 	
 	/* Receive and helper methods*/
 	public boolean hasMessage(){
-		synchronized(sock){
+	//	synchronized(sock){
 			try{
 				return sock.getInputStream().available() > 0;
 			} catch (IOException e){
 				return false;
 			}
+	//	}
+	}
+
+	public int available(){
+		try{
+			return sock.getInputStream().available();
+		} catch (IOException e){
 		}
+		return 0;
 	}
 
 

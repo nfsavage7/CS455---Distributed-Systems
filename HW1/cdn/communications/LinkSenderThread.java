@@ -26,12 +26,10 @@ public class LinkSenderThread extends Thread{
 		byte[] data = msg.marshall();
 		synchronized(sock){
 			try{
-				System.out.println("send " + data.length);
 				out.write(data, 0, data.length);
 				out.flush();
 			} catch (IOException e){
 				System.out.println("LinkSenderThread: Failed to write to ouput stream");
-				System.exit(1);
 			}
 		}
 	}

@@ -24,12 +24,11 @@ public class Discovery {
 		try{
 			ConnectionAccepterThread accepter = new ConnectionAccepterThread(new ServerSocket(port), this);
 			accepter.start();
-			accepter.join();
+
 		} catch (Exception e){
 			System.out.println("Discovery:failed to bind to server socket");
 		}
-	//	listener = new DiscoveryReceiverThread(this, links);
-	//	listener.start();
+		listener = new DiscoveryReceiverThread(this, links);
 	}
 	
 	/* Getter and setter methods */
@@ -39,14 +38,11 @@ public class Discovery {
 
 	public void addLink(Link l){
 		links.add(l);
-		if(listener != null){
-			listener.interrupt();
-			listener.halt();
-		}
-		listener = new DiscoveryReceiverThread(this, links);
-		listener.start();
 	}
-
+	
+	public void makeNewListener(){
+		listener = new DiscoveryReceiverThread(this, links);
+	}
 
 	/* These methods handle messages over the wire */
 	public void registerRouter(RegisterRequest request, Link l){
@@ -143,9 +139,7 @@ public class Discovery {
 			if(cmd.equals("list-routers")){
 				discovery.printRouterInfo();
 			} else if (cmd.equals("setup-cdn")){
-				System.out.println("Working on it boss");
 				discovery.setupCDN();
-				System.out.println("Done with the CDN, Sir");
 			} else if (cmd.equals("close")){
 				discovery.close();
 				break;

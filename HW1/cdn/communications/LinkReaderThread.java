@@ -23,20 +23,16 @@ public class LinkReaderThread extends Thread{
 	public void run(){
 		DataInputStream din = new DataInputStream(in);
 		byte[] msg = null;
-		synchronized(sock){
 			try{
 				msg = new byte[in.available()];
 			} catch (IOException e){
 				System.out.println("LinkReceiverThread::run: No bytes to read");
 			}
-		//	synchronized(din){
-				try{
-					din.readFully(msg);
-				} catch (IOException e){
-					System.out.println("LinkReaderThread: failed to read from input stream");
-				}
-		//	}
-		}
+			try{
+				din.readFully(msg);
+			} catch (IOException e){
+				System.out.println("LinkReaderThread: failed to read from input stream");
+			}
 		link.setBytes(msg);
 	}
 }
