@@ -54,14 +54,17 @@ public class Router {
 
 	public void addLink(Link l){
 		links.add(l);
+		System.out.println("Got new link. " + links.size());
 	}
 	
 	//TODO try to streamline this and regWithDiscovery
 	public void initalizeConnection(String host, int servPort, String servID){
 		try{
 			Link l = new Link(new Socket(host, servPort));
-			links.add(l);
-			RouterReceiveThread reader = new RouterReceiveThread(this, links);
+			l.setID(servID);
+			addLink(l);
+			System.out.println("Here Boss");
+		//	reader = new RouterReceiveThread(this, links);
 			RouterInfo myInfo = new RouterInfo(ID, hostname, port);
 			l.sendData(myInfo);
 			System.out.println("Connected to " + servID);
@@ -75,13 +78,18 @@ public class Router {
 	}
 
 	/* Message handling methods */	
-	public void gotRouterInfo(RouterInfo i){
+	public void gotRouterInfo(RouterInfo i, Link l){
 		//TODO Right here Boss!
+		System.out.println("Connected to Router " + i.getID());
+		l.setID(i.getID());
 		//Honestly, I'm not sure I need this...
 	}
-
+	
+	//TODO take me out
 	public void flood(ChatMessage msg){
+		System.out.println("My links: " + links.size());
 		for(int i = 1; i < links.size(); i++){
+			System.out.println("Sending to  " + links.get(i).getID());
 			links.get(i).sendData(msg);
 		}
 	}
@@ -96,6 +104,8 @@ public class Router {
 	}
 
 	public void connectToPeers(PeerRouterList msg){
+		links = new ArrayList<Link>();
+		links.add(discovery);
 		ArrayList<RouterInfo> peers = msg.getPeers();
 		for(int i = 0; i < peers.size(); i++){
 			RouterInfo peer = peers.get(i);

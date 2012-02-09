@@ -37,7 +37,7 @@ public class RouterReceiveThread extends Thread{
 					int type = Message.bytesToInt(Message.getBytes(0, 4, msg));
 					switch(type){
 						case Message.ROUTER_INFO:
-							router.gotRouterInfo(new RouterInfo(msg));
+							router.gotRouterInfo(new RouterInfo(msg), link);
 							break;
 						//TODO take this out once I have real packets to send
 						case Message.CHAT:
@@ -55,6 +55,7 @@ public class RouterReceiveThread extends Thread{
 					}
 
 				}
+				links = router.getLinks();
 			}
 		}
 	}
