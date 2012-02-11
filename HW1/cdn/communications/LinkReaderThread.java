@@ -1,38 +1,64 @@
 package cdn.communications;
 
+/* java imports */
 import java.io.*;
 import java.net.*;
 
+/* ************************************************************************************************************************ */
+/*                                                     LinkReaderThread class                                               */
+/*                                                    ------------------------                                              */
+/* 	This is the Link Reader Thread. When a link is created, it spanws one of these to receive the messages. This is     */
+/* based on a signalling mechanism. When a message is ready, it immediately gets called on the server it is intended for.   */
+/* ************************************************************************************************************************ */
+
 public class LinkReaderThread extends Thread{
 	
-	/* Member vaiables */
+	/* **************************************************************************************************************** */
+	/*                                                 Member variables                                                 */
+	/* **************************************************************************************************************** */
+
 	private Socket sock;
 	private InputStream in;
 	private Link link;
 
-	/* Constructors */
+	/* **************************************************************************************************************** */
+	/*                                       Constructors and other inital methods                                      */
+	/* **************************************************************************************************************** */
+
 	public LinkReaderThread(Socket s, Link l){
 		sock = s;
 		try{
 			in = sock.getInputStream();
 		} catch (IOException e){}
 		link = l;
+		start();
 	}
 	
-	/* receive method */
+	/* **************************************************************************************************************** */
+	/*                                                Revieve method                                                    */
+	/* **************************************************************************************************************** */
+
 	public void run(){
-		DataInputStream din = new DataInputStream(in);
-		byte[] msg = null;
+		while(true){
 			try{
-				msg = new byte[in.available()];
+				if(in.available() > 0){
+					DataInputStream din = new DataInputStream(in);
+					byte[] msg = null;
+					try{
+						msg = new byte[in.available()];
+					} catch (IOException e){
+						System.out.println("LinkReceiverThread::run: No bytes to read");
+					}
+					try{
+						din.readFully(msg);
+					} catch (IOException e){
+						System.out.println("LinkReaderThread: failed to read from input stream");
+					}
+					link.deliverMessage(msg);
+				}
 			} catch (IOException e){
-				System.out.println("LinkReceiverThread::run: No bytes to read");
+				System.out.println( " Router " + link.getID() + " could not read from socket");
 			}
-			try{
-				din.readFully(msg);
-			} catch (IOException e){
-				System.out.println("LinkReaderThread: failed to read from input stream");
-			}
-		link.setBytes(msg);
+		}
 	}
 }

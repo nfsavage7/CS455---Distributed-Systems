@@ -1,18 +1,33 @@
 package cdn.communications;
 
+/* java imports */
 import java.io.*;
 import java.net.*;
 
-import cdn.wireformats.*;
+/* local imports */
+import cdn.wireformats.Message;
+
+/* ************************************************************************************************************************ */
+/*                                                 	LinkSenderThread class                                              */
+/*                                                     ------------------------                                             */
+/* 	This is the Link Sender Thread. It gets spawned when a Link is created and it is inchage of sending messages        */
+/* between nodes in the network.                                                                                            */
+/* ************************************************************************************************************************ */
 
 public class LinkSenderThread extends Thread{
 
-	/* Member vaiables */
+	/* **************************************************************************************************************** */
+	/*                                                 Member variables                                                 */
+	/* **************************************************************************************************************** */
+
 	private Message msg;
 	private Socket sock;
 	private DataOutputStream out;
 
-	/* Constructors */
+	/* **************************************************************************************************************** */
+	/*                                          Constructors and inital methods                                         */
+	/* **************************************************************************************************************** */
+
 	public LinkSenderThread(Message m, Socket s){
 		msg = m;
 		sock = s;
@@ -21,7 +36,10 @@ public class LinkSenderThread extends Thread{
 		} catch (Exception e){}
 	}
 
-	/* Send method */
+	/* **************************************************************************************************************** */
+	/*                                                   Send method                                                    */
+	/* **************************************************************************************************************** */
+
 	public void run(){
 		byte[] data = msg.marshall();
 		synchronized(sock){

@@ -1,24 +1,42 @@
 package cdn.communications;
 
+/* java imports */
 import java.net.*;
 import java.io.*;
 
+/* local imports */
+import cdn.node.*;
 import cdn.wireformats.*;
+
+/* ************************************************************************************************************************ */
+/*                                                    	    Link class                                                      */
+/*                                                         ------------                                                     */
+/* 	This is the link class. It manages the sending and receiving of messages between nodes in the system.               */
+/* ************************************************************************************************************************ */
 
 public class Link{
 	
-	/* Member vaiables */
+	/* **************************************************************************************************************** */
+	/*                                                Member variables                                                  */
+	/* **************************************************************************************************************** */
+
 	private Socket sock;
-	private byte[] bytes;
+	private Server server;
 	private String ID;
 	
-	/* Constructors */
-	public Link(Socket s){
+	/* **************************************************************************************************************** */
+	/*                                        Constructors and other inital methods                                     */
+	/* **************************************************************************************************************** */
+
+	public Link(Socket s, Server serv){
 		sock = s;
-		bytes = new byte[0];
+		server = serv;
+		LinkReaderThread reader = new LinkReaderThread(sock, this);
 	}
 
-	/* getter and setter methods */
+	/* **************************************************************************************************************** */
+	/*                                           Getter and setter methods                                              */
+	/* **************************************************************************************************************** */
 
 	public void setID(String id){
 		ID = id;
@@ -32,58 +50,29 @@ public class Link{
 		return sock.getInetAddress().getHostName();
 	}
 
-	/* send and helper methods methods */
+	/* **************************************************************************************************************** */
+	/*                                               Send method                                                        */
+	/* **************************************************************************************************************** */
+
 	public void sendData(Message msg){
-		//synchronized(sock){
-			try{
-				LinkSenderThread sender = new LinkSenderThread(msg, sock);
-				sender.start();
-				sender.join();
-			} catch (Exception e){}
-		//}
-	}
-	
-	/* Receive and helper methods*/
-	public boolean hasMessage(){
-	//	synchronized(sock){
-			try{
-				return sock.getInputStream().available() > 0;
-			} catch (IOException e){
-				return false;
-			}
-	//	}
-	}
-
-	public int available(){
 		try{
-			return sock.getInputStream().available();
-		} catch (IOException e){
-		}
-		return 0;
-	}
-
-
-	public void receiveData(){
-		//synchronized(sock){
-			try{
-				LinkReaderThread reader = new LinkReaderThread(sock, this);
-				reader.start();
-				reader.join();
-			} catch (Exception e){}
-		//}
-	}
-
-	public void setBytes(byte[] b){
-		bytes = b;
+			LinkSenderThread sender = new LinkSenderThread(msg, sock);
+			sender.start();
+		} catch (Exception e){}
 	}
 	
-	public byte[] getBytesReceived(){
-		byte[] ret = bytes;
-		bytes = new byte[0];
-		return ret;
+	/* **************************************************************************************************************** */
+	/*                                          Receive callback method                                                 */
+	/* **************************************************************************************************************** */
+	
+	public void deliverMessage(byte[] msg){
+		server.acceptMsg(msg, this);
 	}
+	
+	/* **************************************************************************************************************** */
+	/*                                             Maintnence methods                                                   */
+	/* **************************************************************************************************************** */
 
-	/* terminate the link */
 	public void close(){
 		try{
 			sock.close();

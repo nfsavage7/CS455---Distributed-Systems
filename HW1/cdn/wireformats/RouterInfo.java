@@ -1,11 +1,26 @@
 package cdn.wireformats;
 
+/* ************************************************************************************************************************ */
+/*                                                            RouterInfo                                                    */
+/*                                                           ------------                                                   */
+/* 	This is the Router Info class. This is send from one router to another when the first router makes a connection     */
+/* with another router.                                                                                                     */
+/* ************************************************************************************************************************ */
+
 public class RouterInfo extends Message{
+
+	/* **************************************************************************************************************** */
+	/*                                                 Member variables                                                 */
+	/* **************************************************************************************************************** */
 
 	private final int type = ROUTER_INFO;
 	private String ID;
 	private String hostname;
 	private int port;
+
+	/* **************************************************************************************************************** */
+	/*                                          Constructors and initial methods                                        */
+	/* **************************************************************************************************************** */
 
 	public RouterInfo(String id, String hn, int p){
 		ID = id;
@@ -16,6 +31,10 @@ public class RouterInfo extends Message{
 	public RouterInfo(byte[] data){
 		unmarshall(data);
 	}
+
+	/* **************************************************************************************************************** */
+	/*                                             Getter and setter methods                                            */
+	/* **************************************************************************************************************** */
 
 	public String getID(){
 		return ID;
@@ -36,6 +55,15 @@ public class RouterInfo extends Message{
 	public int sizeOf(){
 		return Message.INT+Message.INT+ID.length()+Message.INT+hostname.length()+Message.INT;
 	}
+	
+	public String toString(){
+		return "Router " + ID + " on port " + port + " on host " + hostname;
+	}
+
+
+	/* **************************************************************************************************************** */
+	/*                                           Packing and unpacking methods                                          */
+	/* **************************************************************************************************************** */
 
 	public byte[] marshall(){
 		//4 for the type, 4 for the length of the ID, 4 for the length of the hostname, and 4 for the port number. I swear I'm not crazy
@@ -95,7 +123,4 @@ public class RouterInfo extends Message{
 		port = Message.bytesToInt(bytes);
 	}
 
-	public String toString(){
-		return "Router " + ID + " on port " + port + " on host " + hostname;
-	}
 }

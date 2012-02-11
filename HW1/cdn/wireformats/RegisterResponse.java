@@ -1,10 +1,24 @@
 package cdn.wireformats;
 
+/* ************************************************************************************************************************ */
+/*                                                        RegisterResponse                                                  */
+/*                                                       ------------------                                                 */
+/* 	This is the Register Response that is sent from the discovery node to the router after a registration request.      */
+/* ************************************************************************************************************************ */
+
 public class RegisterResponse extends Message{
+
+	/* **************************************************************************************************************** */
+	/*                                                 Member variables                                                 */
+	/* **************************************************************************************************************** */
 
 	private final int type = Message.REGISTER_RESPONSE;
 	private byte status;
 	private String info;
+
+	/* **************************************************************************************************************** */
+	/*                                            Constructors and inital methods                                       */
+	/* **************************************************************************************************************** */
 
 	public RegisterResponse(byte s, String i){
 		status = s;
@@ -15,6 +29,10 @@ public class RegisterResponse extends Message{
 		unmarshall(data);
 	}
 	
+	/* **************************************************************************************************************** */
+	/*                                              Getter and setter methods                                           */
+	/* **************************************************************************************************************** */
+
 	public int getType(){
 		return type;
 	}
@@ -23,6 +41,10 @@ public class RegisterResponse extends Message{
 		return info;
 	}
 	
+	/* **************************************************************************************************************** */
+	/*                                           Packing and unpacking methods                                          */
+	/* **************************************************************************************************************** */
+
 	public byte[] marshall(){
 		byte[] ret = new byte[Message.INT + 1 + Message.INT + info.length()];
 		//Marshall the type

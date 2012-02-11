@@ -1,22 +1,35 @@
 package cdn.wireformats;
 
+/* java imports */
 import java.nio.*;
+
+/* ************************************************************************************************************************ */
+/*                                                            Message                                                       */
+/*                                                           ---------                                                      */
+/* 	This is the Message class. It cannot be instanciated. It holds all of the constants for all wireformats. It also is */
+/* responsible for managing the bytes for marshalling and unmarshalling of all wireformats.                                 */
+/* ************************************************************************************************************************ */
 
 public abstract class Message{
 	
-	/* Message Types */
-	//public static final int NO_TYPE = 0;
-	public static final int CHAT = 0;
+	/* **************************************************************************************************************** */
+	/*                                                 Constant type values                                             */
+	/* **************************************************************************************************************** */
+	public static final int CHAT = 0; //TODO take me out
 	public static final int REGISTER_REQUEST = 1;
 	public static final int REGISTER_RESPONSE = 2;
 	public static final int DEREGISTER_REQUEST = 3;
 	public static final int ROUTER_INFO  = 4;
 	public static final int PEER_ROUTER_LIST = 5;
 
-	/* Constants for marshalling */
+	/* **************************************************************************************************************** */
+	/*                                                 Marshalling constants                                            */
+	/* **************************************************************************************************************** */
 	protected static final int INT = 4;
 
-	/* Helper Methods for marshalling */
+	/* **************************************************************************************************************** */
+	/*                                              Marshalling helper methods                                          */
+	/* **************************************************************************************************************** */
 	public static int addBytes(int index, byte[] into, byte[] from){
 		for(int i = 0; i < from.length; i++){
 			into[index+i] = from[i];
@@ -49,6 +62,9 @@ public abstract class Message{
 
 
 	/* Abstract methods */
+	/* **************************************************************************************************************** */
+	/*                                                 Member variables                                                 */
+	/* **************************************************************************************************************** */
 	public abstract int getType();
 	public abstract byte[] marshall();
 	public abstract void unmarshall(byte[] data);

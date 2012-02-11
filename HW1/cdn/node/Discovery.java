@@ -6,32 +6,49 @@ import java.net.*;
 import java.io.*;
 
 /* Local imports */
-import cdn.communications.*;
 import cdn.wireformats.*;
+import cdn.communications.Link;
+import cdn.communications.ConnectionAccepterThread;
 
-public class Discovery {
+/* ************************************************************************************************************************ */
+/*                                                    Discovery node class                                                  */
+/*                                                   ----------------------                                                 */
+/* 	This class is responsible for managing which routers are connected to which other ones. It is also in charge of     */
+/* managing the weights of all of the links.                                                                                */
+/* ************************************************************************************************************************ */
 
-	/* Member vaiables */
+
+public class Discovery extends Server{
+
+	/* **************************************************************************************************************** */
+	/*                                                Member variables                                                  */
+	/* **************************************************************************************************************** */
+
 	private int port;
 	private ArrayList<Link> links = new ArrayList<Link>();
 	private ArrayList<RouterInfo> routers = new ArrayList<RouterInfo>();
-	private DiscoveryReceiverThread listener;
 	private HashMap<String, ArrayList<RouterInfo>> cdn;
+	private ArrayList<Message> messages = new ArrayList<Message>();
+	private ArrayList<Link> linksForMessages = new ArrayList<Link>();
 	
-	/* Constructors */
+	/* **************************************************************************************************************** */
+	/*                                    Constructors and other inital methods                                         */
+	/* **************************************************************************************************************** */
+
 	public Discovery(int p){
 		port = p;
 		try{
 			ConnectionAccepterThread accepter = new ConnectionAccepterThread(new ServerSocket(port), this);
-			accepter.start();
 
 		} catch (Exception e){
 			System.out.println("Discovery:failed to bind to server socket");
 		}
-		listener = new DiscoveryReceiverThread(this, links);
 	}
 	
-	/* Getter and setter methods */
+	/* **************************************************************************************************************** */
+	/*                                               Getter and setter methods                                          */
+	/* **************************************************************************************************************** */
+
 	public ArrayList<Link> getLinks(){
 		return links;
 	}
@@ -40,11 +57,47 @@ public class Discovery {
 		links.add(l);
 	}
 	
-/*	public void makeNewListener(){
-		listener = new DiscoveryReceiverThread(this, links);
+	/* **************************************************************************************************************** */
+	/*                                                Message handling methods                                          */
+	/* **************************************************************************************************************** */
+
+	/* This method gets the messages and handles them */
+	public void acceptMsg(byte[] msg, Link l){
+		int type = Message.bytesToInt(Message.getBytes(0, 4, msg));
+		switch(type){
+			case Message.REGISTER_REQUEST:
+				messages.add(new RegisterRequest(msg));
+				linksForMessages.add(l);
+				break;
+			case Message.DEREGISTER_REQUEST:
+				messages.add(new DeregisterRequest(msg));
+				linksForMessages.add(l);
+				break;
+			default:
+				System.out.println("Message type unsupported");
+				break;
+		}
+		handleMessages();
 	}
 
-*/	/* These methods handle messages over the wire */
+	public void handleMessages(){
+		for(int i = 0; i < messages.size(); i++){
+			int type = messages.get(i).getType();
+			switch(type){
+				case Message.REGISTER_REQUEST:
+					registerRouter(((RegisterRequest)messages.get(i)), linksForMessages.get(i));
+					break;
+				case Message.DEREGISTER_REQUEST:
+					deregisterRouter(((DeregisterRequest)messages.get(i)), linksForMessages.get(i));
+					break;
+				default:
+					break;
+			}
+		}
+		messages = new ArrayList<Message>();
+		linksForMessages = new ArrayList<Link>();
+	}
+	
 	public void registerRouter(RegisterRequest request, Link l){
 		/* Store the router's info */
 		RouterInfo info = new RouterInfo(request.getID(), l.getHostname(), request.getPort());
@@ -74,7 +127,10 @@ public class Discovery {
 		links.remove(index);
 	}
 
-	/* These methods handle command line messages */
+	/* **************************************************************************************************************** */
+	/*                                                Command handling methods                                          */
+	/* **************************************************************************************************************** */
+
 	public void printRouterInfo(){
 		for(int i = 0; i < routers.size(); i++){
 			System.out.println(routers.get(i));
@@ -87,11 +143,14 @@ public class Discovery {
 		}
 	}
 
+	/* **************************************************************************************************************** */
+	/*                                           CDN setup and support methods                                          */
+	/* **************************************************************************************************************** */
+
 	public void setupCDN(int numConnections){
 		boolean done = false;
 		HashMap<String, ArrayList<RouterInfo>> connectionsToSend = new HashMap<String, ArrayList<RouterInfo>>() ;
 		while(!done){
-			//need to add in sending of the peer lists
 			connectionsToSend = calculateCDN(numConnections);
 			if(connectionsToSend == null){
 				continue;
@@ -99,18 +158,14 @@ public class Discovery {
 			done = noIslands(cdn);
 		}
 		sendPeers(connectionsToSend);
-		System.out.println("Done with CDN!");
 	}
 
-	//TODO check for islands somehow!
-	//TODO take out static num of connections = 2
 	public HashMap<String, ArrayList<RouterInfo>>  calculateCDN(int numConnections){
 		long startTime = System.nanoTime();
 		cdn = new HashMap<String, ArrayList<RouterInfo>>();
 		HashMap<String, ArrayList<RouterInfo>> connectionsToSend = new HashMap<String, ArrayList<RouterInfo>>();
 		for(int i = 0; i < links.size(); i++){
 			if(System.nanoTime() - startTime >100000000){
-			//	System.out.println("First timeout");
 				return null;
 			}
 			Random rand = new Random();
@@ -120,18 +175,15 @@ public class Discovery {
 			if(cdn.containsKey(l.getID())){
 				peers = cdn.get(l.getID());
 				if(peers.size() == numConnections){
-					System.out.println("Skip");
-			//		continue;
+					continue;
 				}
 			}
 			ArrayList<RouterInfo> peersToSend = new ArrayList<RouterInfo>();
 			while(peers.size() != numConnections){
 				if(System.nanoTime() - startTime >100000000){
-			//		System.out.println("Second timeout");
 					return null;
 				}
 				int router = rand.nextInt(links.size());
-			//	System.out.println(router);
 				//if peer is not already a peer and I am not peer
 				if(!peers.contains(routers.get(router)) && !routers.get(router).getID().equals(l.getID())){
 					ArrayList<RouterInfo> hisPeers = new ArrayList<RouterInfo>();
@@ -139,7 +191,6 @@ public class Discovery {
 					if(cdn.containsKey(links.get(router).getID())){
 						hisPeers = cdn.get(routers.get(router).getID());
 						//If peer is already at Cr connections or we are already peers
-					//	System.out.println("His peers: " + hisPeers.size());
 						if(hisPeers.size() == numConnections || hisPeers.contains(l.getID())){
 							continue;
 						}
@@ -153,25 +204,18 @@ public class Discovery {
 			cdn.put(l.getID(), peers);
 			connectionsToSend.put(l.getID(), peersToSend);
 
-			/* Contact the Routers */
-			/*if(peersToSend.size() > 0 ){
-				PeerRouterList list = new PeerRouterList(peersToSend);
-				l.sendData(list);
-			}*/
-
 			/* debugging the cdn. TODO this is to be taken out */
-			System.out.println("Connections for router " + l.getID());
+		/*	System.out.println("Connections for router " + l.getID());
 			for(int j = 0; j < peers.size(); j ++){
 				System.out.print( peers.get(j).getID() + " " );
 			}
 			System.out.print("\n");
+		*/
 		}
-		System.out.println("Checking for islands");
 		return connectionsToSend;
 	}
 
 	public boolean noIslands(HashMap<String, ArrayList<RouterInfo>> connections){
-		//So, I'm thinking, hashmap of string to bool. pick the first router and his first link, every time you hit a router that isn't in the hashmap, add it. if all of the routers that a router is connected to, then we can check the hashmap to see if we have all of the routers in the hashmap
 		HashMap<String, Boolean> connected = new HashMap<String, Boolean>();
 		String router = links.get(0).getID();
 		boolean done = false;
@@ -196,7 +240,6 @@ public class Discovery {
 	}
 
 	public void sendPeers(HashMap<String, ArrayList<RouterInfo>> connectionsToSend){
-	//	System.out.println(connectionsToSend.get(links.get(0).getID()));
 		for(int i = 0; i < links.size(); i++){
 			if(connectionsToSend.containsKey(links.get(i).getID())){
 				System.out.println("Sending peers to router " + links.get(i).getID());
@@ -207,6 +250,10 @@ public class Discovery {
 			}
 		}
 	}
+	/* **************************************************************************************************************** */
+	/*                                                Main                                                              */
+	/* **************************************************************************************************************** */
+
 	/* The main thread handles command line messages */
 	public static void main(String args[]){
 		Scanner in = new Scanner(args[0]);

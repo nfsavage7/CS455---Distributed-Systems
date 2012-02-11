@@ -1,12 +1,26 @@
 package cdn.wireformats;
 
+/* ************************************************************************************************************************ */
+/* 		                                           DeregisterRequest                                                */
+/*                                                        -------------------                                               */
+/* 	This is the Deregister Request message. It is sent from a router to the discovery node.		                    */
+/* ************************************************************************************************************************ */
+
 public class DeregisterRequest extends Message{
+
+	/* **************************************************************************************************************** */
+	/*                                                 Member variables                                                 */
+	/* **************************************************************************************************************** */
 
 	private final int type = DEREGISTER_REQUEST;
 	private String IP;
 	private int port;
 	private String ID;
 
+	/* **************************************************************************************************************** */
+	/*                                         Constructors and other inital methods                                    */
+	/* **************************************************************************************************************** */
+	
 	public DeregisterRequest(String ip, int p, String id){
 		IP = ip;
 		port = p;
@@ -16,6 +30,10 @@ public class DeregisterRequest extends Message{
 	public DeregisterRequest(byte[] data){
 		unmarshall(data);
 	}
+
+	/* **************************************************************************************************************** */
+	/*                                               Getter and setter methods                                          */
+	/* **************************************************************************************************************** */
 
 	public int getType(){
 		return type;
@@ -28,6 +46,10 @@ public class DeregisterRequest extends Message{
 	public int getPort(){
 		return port;
 	}
+
+	/* **************************************************************************************************************** */
+	/*                                             acking and unpacking methods                                         */
+	/* **************************************************************************************************************** */
 
 	public byte[] marshall(){
 		byte[] ret = new byte[Message.INT + Message.INT + IP.length() + Message.INT + Message.INT + ID.length()];

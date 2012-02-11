@@ -1,11 +1,25 @@
 package cdn.wireformats;
 
+/* ************************************************************************************************************************ */
+/*                                                         RegisterRequest                                                  */
+/*                                                        -----------------                                                 */
+/* 	This is the Register Request that is send from the routers to the discovery node upon start up.                     */
+/* ************************************************************************************************************************ */
+
 public class RegisterRequest extends Message{
 	
+	/* **************************************************************************************************************** */
+	/*                                                 Member variables                                                 */
+	/* **************************************************************************************************************** */
+
 	private final int type = Message.REGISTER_REQUEST;
 	private String IP;
 	private int port;
 	private String ID;
+
+	/* **************************************************************************************************************** */
+	/*                                           Constructors and inital methods                                        */
+	/* **************************************************************************************************************** */
 
 	public RegisterRequest(String ip, int p, String id){
 		IP = ip;
@@ -17,6 +31,14 @@ public class RegisterRequest extends Message{
 		unmarshall(data);
 	}
 
+	/* **************************************************************************************************************** */
+	/*                                                Getters and setter methods                                        */
+	/* **************************************************************************************************************** */
+
+	public int getType(){
+		return type;
+	}
+	
 	public String getID(){
 		return ID;
 	}
@@ -24,6 +46,10 @@ public class RegisterRequest extends Message{
 	public int getPort(){
 		return port;
 	}
+
+	/* **************************************************************************************************************** */
+	/*                                             Packing and unpacking methods                                        */
+	/* **************************************************************************************************************** */
 
 	public byte[] marshall(){
 		byte[] ret = new byte[Message.INT + Message.INT + IP.length() + Message.INT + Message.INT + ID.length()];
@@ -80,7 +106,3 @@ public class RegisterRequest extends Message{
 		ID = new String(bytes);
 	}
 
-	public int getType(){
-		return type;
-	}
-}

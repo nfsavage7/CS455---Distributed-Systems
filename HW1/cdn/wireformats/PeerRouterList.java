@@ -1,14 +1,27 @@
 package cdn.wireformats;
 
+/* java imports */
 import java.util.*;
+
+/* ************************************************************************************************************************ */
+/*	                                                   PeerRouterList                                                   */
+/*                                                        ----------------                                                  */
+/* 	This is the Peer Router List that is sent from the Discovery to the routers to tell them who to connect to.         */
+/* ************************************************************************************************************************ */
 
 public class PeerRouterList extends Message{
 
-	/* Memeber variables */
+	/* **************************************************************************************************************** */
+	/*                                                 Member variables                                                 */
+	/* **************************************************************************************************************** */
+
 	private final int type = PEER_ROUTER_LIST;
 	private ArrayList<RouterInfo> peers;
 
-	/* Constructors */
+	/* **************************************************************************************************************** */
+	/*                                       Constructors and other inital methods                                      */
+	/* **************************************************************************************************************** */
+
 	public PeerRouterList(ArrayList<RouterInfo> p){
 		peers = p;
 	}
@@ -17,7 +30,10 @@ public class PeerRouterList extends Message{
 		unmarshall(data);
 	}
 
-	/* Getter and setter methods */
+	/* **************************************************************************************************************** */
+	/*                                             Getter and setter methods                                            */
+	/* **************************************************************************************************************** */
+
 	public ArrayList<RouterInfo> getPeers(){
 		return peers;
 	}
@@ -34,6 +50,10 @@ public class PeerRouterList extends Message{
 		}
 		return ret;
 	}
+
+	/* **************************************************************************************************************** */
+	/*                                          Packing and unpacking methods                                           */
+	/* **************************************************************************************************************** */
 
 	public byte[] marshall(){
 		//4 for the type, 4 for the num of peers, and the number of peers times the size of a router info
