@@ -91,7 +91,7 @@ public class RouterInfo extends Message{
 		//Marshall the port
 		bytes = Message.intToBytes(port);
 		index = Message.addBytes(index, ret, bytes);
-
+		
 		return ret;
 	}
 	

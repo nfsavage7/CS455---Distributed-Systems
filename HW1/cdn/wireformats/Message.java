@@ -21,6 +21,8 @@ public abstract class Message{
 	public static final int DEREGISTER_REQUEST = 3;
 	public static final int ROUTER_INFO  = 4;
 	public static final int PEER_ROUTER_LIST = 5;
+	public static final int LINK_INFO = 6;
+	public static final int LINK_WEIGHT_UPDATE = 7;
 
 	/* **************************************************************************************************************** */
 	/*                                                 Marshalling constants                                            */

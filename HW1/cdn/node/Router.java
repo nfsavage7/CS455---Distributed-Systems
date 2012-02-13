@@ -94,6 +94,11 @@ public class Router extends Server{
 					messages.add(new PeerRouterList(msg));
 					linksForMessages.add(l);
 					break;
+				case Message.LINK_WEIGHT_UPDATE:	
+					System.out.println("Yeah, got the right type...");
+					messages.add(new LinkWeightUpdate(msg));
+					linksForMessages.add(l);
+					break;
 				default:
 					System.out.println("Router::acceptMsg: Message type unsupported.");
 					break;
@@ -118,6 +123,9 @@ public class Router extends Server{
 						break;
 					case Message.PEER_ROUTER_LIST:
 						connectToPeers((PeerRouterList)(messages.get(i)));
+						break;
+					case Message.LINK_WEIGHT_UPDATE:
+						updateLinkWeights((LinkWeightUpdate)(messages.get(i)));
 						break;
 					default:
 						break;
@@ -162,6 +170,10 @@ public class Router extends Server{
 		} catch (Exception e) {
 			System.out.println("Router::initilizeConnection: something broke");
 		}
+	}
+	
+	public void updateLinkWeights(LinkWeightUpdate msg){	
+		System.out.println("Router::LinkWeightUpdate: Msg received, now implement this");
 	}
 
 	/* **************************************************************************************************************** */

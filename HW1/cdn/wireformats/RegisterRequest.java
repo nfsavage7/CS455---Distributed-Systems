@@ -105,4 +105,5 @@ public class RegisterRequest extends Message{
 		bytes = Message.getBytes(index, len, data);
 		ID = new String(bytes);
 	}
+}
 

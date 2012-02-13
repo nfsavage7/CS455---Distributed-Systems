@@ -57,6 +57,15 @@ public class Discovery extends Server{
 		links.add(l);
 	}
 	
+	public RouterInfo getRouterInfo(String id){
+		for(int i = 0; i < routers.size(); i++){
+			if(routers.get(i).getID().equals(id)){
+				return routers.get(i);
+			}
+		}
+		return null;
+	}
+	
 	/* **************************************************************************************************************** */
 	/*                                                Message handling methods                                          */
 	/* **************************************************************************************************************** */
@@ -250,6 +259,46 @@ public class Discovery extends Server{
 			}
 		}
 	}
+	
+	/* **************************************************************************************************************** */
+	/*                                           MST setup and support methods                                          */
+	/* **************************************************************************************************************** */
+
+	public void updateLinkWeights(){
+		ArrayList<LinkInfo> linksToSend = new ArrayList<LinkInfo>();
+		boolean addLink;
+		for( int i = 0; i < links.size(); i++){
+			ArrayList<RouterInfo> connections = cdn.get(links.get(i).getID());
+			for( int k = 0; k < connections.size(); k++){
+				addLink = true;
+				for(int j = 0; j < linksToSend.size(); j++){
+					RouterInfo me = linksToSend.get(j).hasRouter(routers.get(i));
+					RouterInfo peer = linksToSend.get(j).hasRouter(connections.get(k));
+					if(me != null && peer != null){
+						addLink = false;
+						break;
+					}
+				}
+				if(addLink){
+					linksToSend.add(new LinkInfo(getRouterInfo(links.get(i).getID()),getRouterInfo(connections.get(k).getID())));
+				} 
+			}
+		}
+		/* Testing output */
+		//TODO: Remove me probably
+		for(int i = 0; i < linksToSend.size(); i++){
+			System.out.println(linksToSend.get(i));
+		}
+		sendWeights(new LinkWeightUpdate(linksToSend));
+		
+	}
+	
+	private void sendWeights(LinkWeightUpdate msg){
+		for(int i = 0; i < links.size(); i++){
+			links.get(i).sendData(msg);
+		}
+	}
+
 	/* **************************************************************************************************************** */
 	/*                                                Main                                                              */
 	/* **************************************************************************************************************** */
@@ -271,6 +320,9 @@ public class Discovery extends Server{
 				tmp.useDelimiter(" ");
 				tmp.next();
 				discovery.setupCDN(tmp.nextInt());
+			} else if (cmd.equals("update")){
+				//TODO take me out
+				discovery.updateLinkWeights();
 			} else if (cmd.equals("close")){
 				discovery.close();
 				break;
