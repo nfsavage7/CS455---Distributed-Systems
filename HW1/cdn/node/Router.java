@@ -28,6 +28,7 @@ public class Router extends Server{
 	private String IP;
 	private String hostname;
 	private int port;
+	private int tracker = 0;
 	private Link discovery;
 	private MST mst;
 	private ArrayList<Link> links = new ArrayList<Link>();
@@ -97,8 +98,11 @@ public class Router extends Server{
 					linksForMessages.add(l);
 					break;
 				case Message.LINK_WEIGHT_UPDATE:	
-					System.out.println("Yeah, got the right type...");
 					messages.add(new LinkWeightUpdate(msg));
+					linksForMessages.add(l);
+					break;
+				case Message.DATA:
+					messages.add(new Data(msg));
 					linksForMessages.add(l);
 					break;
 				default:
@@ -128,6 +132,9 @@ public class Router extends Server{
 						break;
 					case Message.LINK_WEIGHT_UPDATE:
 						updateLinkWeights((LinkWeightUpdate)(messages.get(i)));
+						break;
+					case Message.DATA:
+						gotData((Data)(messages.get(i)), linksForMessages.get(i));
 						break;
 					default:
 						break;
@@ -187,6 +194,25 @@ public class Router extends Server{
 		}
 	}
 
+	public void gotData(Data msg, Link l){
+		tracker++;
+		System.out.println("Data from Router " + l.getID() + " Tracker: " + msg.getTracker());
+		ArrayList<String> peers = msg.getRoutes(ID);
+		if(peers == null){
+			System.out.println("Leaf");
+		} else {
+			System.out.println(peers);
+		}
+		int count = 0;
+		for(int i = 0; i < links.size() && peers != null; i++){
+			if(peers.contains(links.get(i).getID())){
+				links.get(i).sendData(msg);
+				count ++;
+			} else if(count == peers.size()){
+				break;
+			}
+		}
+	}
 	/* **************************************************************************************************************** */
 	/*                                                Command handling methods                                          */
 	/* **************************************************************************************************************** */
@@ -201,6 +227,19 @@ public class Router extends Server{
 		for(int i = 1; i < links.size(); i++){
 			System.out.println("Sending to  " + links.get(i).getID());
 			links.get(i).sendData(msg);
+		}
+	}
+
+	//TODO take me out
+	public void sendData(){
+		tracker++;
+		ArrayList<String> connections = mst.get(ID);
+		int count = 0;
+	
+		for(int i = 0; i < links.size(); i++){
+			if(connections.contains(links.get(i).getID())){
+				links.get(i).sendData(new Data(mst.getRoutingPlan(), tracker));
+			}
 		}
 	}
 
@@ -228,6 +267,8 @@ public class Router extends Server{
 				router.deregister();
 			} else if (cmd.equals("print-mst")){
 				router.printMST();
+			} else if (cmd. equals("send-data")){
+				router.sendData();
 			} else {
 				router.flood(new ChatMessage(cmd));
 			}

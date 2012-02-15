@@ -82,6 +82,35 @@ public class MST{
 	/*                                                Getter and Setter Methods                                         */
 	/* **************************************************************************************************************** */
 	
+	public ArrayList<String> get(String id){
+		ArrayList<String >ret = new ArrayList<String>();
+		ArrayList<Edge> edges = mst.get(id);
+
+		for(int i = 0; i < edges.size(); i++){
+			ret.add(edges.get(i).getVertex());
+		}
+		
+		return ret;
+	}
+
+	public HashMap<String, ArrayList<String>> getRoutingPlan(){
+		HashMap<String, ArrayList<String>> plan = new HashMap<String, ArrayList<String>>();
+
+		Object[] keys = mst.keySet().toArray();
+		for(int i = 0; i < keys.length; i++){
+			String key = (String)(keys[i]);
+			ArrayList<Edge> edges = mst.get(key);
+			ArrayList<String> peers = new ArrayList<String>();
+			
+			for(int j = 0; j < edges.size(); j++){
+				peers.add(edges.get(j).getVertex());
+			}
+			
+			plan.put(key, peers);
+		}
+		return plan;
+	}
+	
 	public void print(String id){
 		if(!mst.containsKey(id)){
 			System.out.println(id);
