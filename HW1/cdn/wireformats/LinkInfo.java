@@ -9,10 +9,10 @@ public class LinkInfo extends Message {
 	private RouterInfo routerTwo;
 	private int weight;
 
-	public LinkInfo(RouterInfo rOne, RouterInfo rTwo){
+	public LinkInfo(RouterInfo rOne, RouterInfo rTwo, int w){
 		routerOne = rOne;
 		routerTwo = rTwo;
-		weight = 0;
+		weight = w;
 	}
 
 	public LinkInfo(byte[] data){
@@ -28,7 +28,19 @@ public class LinkInfo extends Message {
 		}
 		return null;
 	}
+
+	public RouterInfo getRouterOne(){
+		return routerOne;
+	}
 	
+	public RouterInfo getRouterTwo(){
+		return routerTwo;
+	}	
+
+	public int getWeight(){
+		return weight;
+	}
+
 	public int getType(){
 		return type;
 	}

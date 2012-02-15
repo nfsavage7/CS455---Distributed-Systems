@@ -1,6 +1,10 @@
 package cdn.wireformats;
 
+/* java imports */
 import java.util.ArrayList;
+
+/* local imports */
+import cdn.mst.Edge;
 
 /* ************************************************************************************************************************ */
 /*	                                                 LinkWeightUpdate                                                   */
@@ -36,6 +40,25 @@ public class LinkWeightUpdate extends Message{
 
 	public int getType(){
 		return type;
+	}
+
+	public ArrayList<LinkInfo> getLinks(){
+		return links;
+	}
+	
+	public ArrayList<Edge> getLinks(RouterInfo r, int numConnections){
+		ArrayList<Edge> edges = new ArrayList<Edge>();
+		for(int i = 0; i < links.size(); i++){
+			if(links.get(i).getRouterOne().getID().equals(r.getID())){
+				edges.add(new Edge(links.get(i).getRouterTwo().getID(), links.get(i).getWeight()));
+			} else if(links.get(i).getRouterTwo().getID().equals(r.getID())){
+				edges.add(new Edge(links.get(i).getRouterOne().getID(), links.get(i).getWeight()));
+			}
+			if(edges.size() == numConnections){
+				break;
+			}
+		}
+		return edges;
 	}
 
 	public int sizeOf(){

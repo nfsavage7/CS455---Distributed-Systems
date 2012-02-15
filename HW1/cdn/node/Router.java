@@ -9,6 +9,7 @@ import java.net.*;
 import cdn.wireformats.*;
 import cdn.communications.Link;
 import cdn.communications.ConnectionAccepterThread;
+import cdn.mst.MST;
 
 /* ************************************************************************************************************************ */
 /*                                                          Router node class                                               */
@@ -174,6 +175,7 @@ public class Router extends Server{
 	
 	public void updateLinkWeights(LinkWeightUpdate msg){	
 		System.out.println("Router::LinkWeightUpdate: Msg received, now implement this");
+		MST mst = new MST(msg, links.size()-1, ID);
 	}
 
 	/* **************************************************************************************************************** */

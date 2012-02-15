@@ -280,7 +280,13 @@ public class Discovery extends Server{
 					}
 				}
 				if(addLink){
-					linksToSend.add(new LinkInfo(getRouterInfo(links.get(i).getID()),getRouterInfo(connections.get(k).getID())));
+					//Add random weight
+					Random r = new Random();
+					int w = 0;
+					while(w < 1){
+						w = r.nextInt(11);
+					}
+					linksToSend.add(new LinkInfo(getRouterInfo(links.get(i).getID()),getRouterInfo(connections.get(k).getID()), w));
 				} 
 			}
 		}
