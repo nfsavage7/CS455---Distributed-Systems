@@ -29,6 +29,7 @@ public class Router extends Server{
 	private String hostname;
 	private int port;
 	private Link discovery;
+	private MST mst;
 	private ArrayList<Link> links = new ArrayList<Link>();
 	private ArrayList<Message> messages = new ArrayList<Message>();
 	private ArrayList<Link> linksForMessages = new ArrayList<Link>();
@@ -173,9 +174,17 @@ public class Router extends Server{
 		}
 	}
 	
-	public void updateLinkWeights(LinkWeightUpdate msg){	
-		System.out.println("Router::LinkWeightUpdate: Msg received, now implement this");
-		MST mst = new MST(msg, links.size()-1, ID);
+	public void updateLinkWeights(LinkWeightUpdate msg){
+		boolean create =  false;
+		if(mst == null){
+			create = true;
+		}
+		mst = new MST(msg, links.size()-1, ID);
+		if(create){
+			System.out.println("Created the MST");
+		} else {
+			System.out.println("Updated the MST");
+		}
 	}
 
 	/* **************************************************************************************************************** */
@@ -193,6 +202,10 @@ public class Router extends Server{
 			System.out.println("Sending to  " + links.get(i).getID());
 			links.get(i).sendData(msg);
 		}
+	}
+
+	public void printMST(){
+		mst.print(ID);
 	}
 
 	/* **************************************************************************************************************** */
@@ -213,6 +226,8 @@ public class Router extends Server{
 			String cmd = in.nextLine();
 			if(cmd.equals("exit-cdn")){
 				router.deregister();
+			} else if (cmd.equals("print-mst")){
+				router.printMST();
 			} else {
 				router.flood(new ChatMessage(cmd));
 			}

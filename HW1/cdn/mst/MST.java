@@ -44,10 +44,7 @@ public class MST{
 		int numNodes = adjLst.getNumNodes();
 		for(routers = 1; routers < numNodes; routers++){
 			String from = inMST.get(0);
-			//System.out.println("inMST: " + inMST.size());
-		//	System.out.println(seed);
 			Edge min = null;
-			//System.out.println("hit");
 			for(int i = 0; i < inMST.size(); i++){
 				Edge e = adjLst.getMinEdge(inMST.get(i));
 				if(min == null && e != null && !inMST.contains(e.getVertex())){
@@ -55,41 +52,27 @@ public class MST{
 					min = e;
 				} else if (e == null || inMST.contains(e.getVertex())){
 					continue;
-				} else if(/*(e != null && min != null) && */(e.getWeight() <= min.getWeight())  && !(inMST.contains(min.getVertex()))){
+				} else if((e.getWeight() <= min.getWeight())  && !(inMST.contains(min.getVertex()))){
 					from = inMST.get(i);
 					min = e;
 				}
 			}
-			/*if(min.isInMST()){
-				System.out.println("MST: " + inMST.size());
-				System.out.println("min1: " + adjLst.getMinEdge(inMST.get(0)));
-				System.out.println("min2: " + adjLst.getMinEdge(inMST.get(1)));
-				System.out.println("Min: " + min);
-				break;
-			}*/
 			ArrayList<Edge> e = new ArrayList<Edge>();
 			if(mst.containsKey(from)){
 				e = mst.get(from);
 				mst.remove(from);
 			}
-			/*if(min != null && mst.containsKey(min.getVertex())){
-				eTo = mst.get(min.getVertex());
-				mst.remove(min.getVertex());
-			}*/
 			if(min != null){
 				e.add(min);
 				mst.put(from, e);
 				min.addToMST();
-				//System.out.println(min);
-			//	System.out.println(adjLst);
 				Edge edge = adjLst.getEdge(min.getVertex(), from);
-			//	System.out.println("Edge: " + edge);
 				edge.addToMST();
 				inMST.add(min.getVertex());
-				System.out.println(from + ": " + e);
 			}
 				
 		}
+		//TODO pretty this message up
 		if(routers < numNodes){
 			System.out.println("MST::Prim: something isn't right");
 		}
@@ -98,5 +81,16 @@ public class MST{
 	/* **************************************************************************************************************** */
 	/*                                                Getter and Setter Methods                                         */
 	/* **************************************************************************************************************** */
-
+	
+	public void print(String id){
+		if(!mst.containsKey(id)){
+			System.out.println(id);
+			return;
+		}
+		ArrayList<Edge> edges = mst.get(id);
+		for(int i = 0; i < edges.size(); i++){
+			System.out.print(id + "--" + edges.get(i).getWeight() + "--");
+			print(edges.get(i).getVertex());
+		}
+	}
 }
