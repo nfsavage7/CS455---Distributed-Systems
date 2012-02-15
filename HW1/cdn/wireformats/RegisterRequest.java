@@ -46,6 +46,10 @@ public class RegisterRequest extends Message{
 	public int getPort(){
 		return port;
 	}
+	
+	public String getIP(){
+		return IP;
+	}
 
 	/* **************************************************************************************************************** */
 	/*                                             Packing and unpacking methods                                        */

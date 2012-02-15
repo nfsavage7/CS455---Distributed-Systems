@@ -15,4 +15,5 @@ public abstract class Server{
 
 	public abstract void acceptMsg(byte[] msg, Link l);
 	public abstract void addLink(Link l);
+	public abstract void removeLink(Link l);
 }

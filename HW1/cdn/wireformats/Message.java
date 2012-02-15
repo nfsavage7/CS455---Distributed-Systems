@@ -25,6 +25,7 @@ public abstract class Message{
 	public static final int LINK_WEIGHT_UPDATE = 7;
 	public static final int ROUTING_PLAN = 8;
 	public static final int DATA = 9;
+	public static final int REMOVE_LINK = 10;
 
 	/* **************************************************************************************************************** */
 	/*                                                 Marshalling constants                                            */

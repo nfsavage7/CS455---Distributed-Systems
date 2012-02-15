@@ -50,14 +50,21 @@ public class Link{
 		return sock.getInetAddress().getHostName();
 	}
 
+	public String getIP(){
+		return sock.getInetAddress().toString();
+	}
 	/* **************************************************************************************************************** */
 	/*                                               Send method                                                        */
 	/* **************************************************************************************************************** */
 
 	public void sendData(Message msg){
 		try{
-			LinkSenderThread sender = new LinkSenderThread(msg, sock);
-			sender.start();
+			if(!sock.isClosed() && sock.isConnected()){
+				LinkSenderThread sender = new LinkSenderThread(msg, sock, this);
+				sender.start();
+			} else {
+				System.out.println("Unable to send message. Connections is already closed");
+			}
 		} catch (Exception e){}
 	}
 	
@@ -76,6 +83,7 @@ public class Link{
 	public void close(){
 		try{
 			sock.close();
+			server.removeLink(this);
 		} catch(Exception e) {}
 	}
 }

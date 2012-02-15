@@ -71,6 +71,12 @@ public class Router extends Server{
 	public void addLink(Link l){
 		links.add(l);
 	}
+
+	public void removeLink(Link l){
+		int index = links.indexOf(l);
+		links.remove(index);
+		
+	}
 	
 	/* **************************************************************************************************************** */
 	/*                                                Message handling methods                                          */
@@ -157,6 +163,9 @@ public class Router extends Server{
 	
 	public void gotRegisterResponse(RegisterResponse msg){
 		System.out.println(msg.getInfo());
+		if(msg.getStatus() > 0){
+			System.exit(1);
+		}
 	}
 
 	public void connectToPeers(PeerRouterList msg){
@@ -177,7 +186,7 @@ public class Router extends Server{
 			l.sendData(myInfo);
 			System.out.println("Connected to " + servID);
 		} catch (Exception e) {
-			System.out.println("Router::initilizeConnection: something broke");
+			discovery.sendData(new RemoveLink(servID));
 		}
 	}
 	

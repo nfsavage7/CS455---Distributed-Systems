@@ -23,14 +23,16 @@ public class LinkSenderThread extends Thread{
 	private Message msg;
 	private Socket sock;
 	private DataOutputStream out;
+	private Link link;
 
 	/* **************************************************************************************************************** */
 	/*                                          Constructors and inital methods                                         */
 	/* **************************************************************************************************************** */
 
-	public LinkSenderThread(Message m, Socket s){
+	public LinkSenderThread(Message m, Socket s, Link l){
 		msg = m;
 		sock = s;
+		link = l;
 		try{
 			out = new DataOutputStream(s.getOutputStream());
 		} catch (Exception e){}
@@ -47,7 +49,7 @@ public class LinkSenderThread extends Thread{
 				out.write(data, 0, data.length);
 				out.flush();
 			} catch (IOException e){
-				System.out.println("LinkSenderThread: Failed to write to ouput stream");
+				link.close();
 			}
 		}
 	}

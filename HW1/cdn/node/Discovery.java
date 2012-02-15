@@ -25,13 +25,14 @@ public class Discovery extends Server{
 	/*                                                Member variables                                                  */
 	/* **************************************************************************************************************** */
 
-	private int port;
-	private MstUpdateThread mstThread;
-	private ArrayList<Link> links = new ArrayList<Link>();
-	private ArrayList<RouterInfo> routers = new ArrayList<RouterInfo>();
-	private HashMap<String, ArrayList<RouterInfo>> cdn;
-	private ArrayList<Message> messages = new ArrayList<Message>();
-	private ArrayList<Link> linksForMessages = new ArrayList<Link>();
+	private int port;								//Port that I am listening on for new connections
+	private MstUpdateThread mstThread;						//Timer to update the link weights
+	private ArrayList<Link> links = new ArrayList<Link>();				//Links to each router
+	private ArrayList<RouterInfo> routers = new ArrayList<RouterInfo>();		//Information about each router
+	private HashMap<String, ArrayList<RouterInfo>> cdn;				//The links between each router
+	private ArrayList<LinkInfo> uniqueConnections = new ArrayList<LinkInfo>();	//This is a list of all the bidirectional links in the cdn
+	private ArrayList<Message> messages = new ArrayList<Message>();			//Queue of incomming messages
+	private ArrayList<Link> linksForMessages = new ArrayList<Link>();		//Links that each message came in over
 	
 	/* **************************************************************************************************************** */
 	/*                                    Constructors and other inital methods                                         */
@@ -57,6 +58,16 @@ public class Discovery extends Server{
 
 	public void addLink(Link l){
 		links.add(l);
+	}
+
+	public void removeLink(Link l){
+		int index = links.indexOf(l);
+		links.remove(index);
+		routers.remove(index);
+		System.out.println("Lost connection to router " + l.getID() + ". Please re-setup the cdn");
+		if(mstThread != null){
+			mstThread.setDone();
+		}
 	}
 	
 	public RouterInfo getRouterInfo(String id){
@@ -84,6 +95,10 @@ public class Discovery extends Server{
 				messages.add(new DeregisterRequest(msg));
 				linksForMessages.add(l);
 				break;
+			case Message.REMOVE_LINK:
+				messages.add(new RemoveLink(msg));
+				linksForMessages.add(l);
+				break;
 			default:
 				System.out.println("Message type unsupported");
 				break;
@@ -101,6 +116,15 @@ public class Discovery extends Server{
 				case Message.DEREGISTER_REQUEST:
 					deregisterRouter(((DeregisterRequest)messages.get(i)), linksForMessages.get(i));
 					break;
+				case Message.REMOVE_LINK:
+					RemoveLink msg = (RemoveLink)messages.get(i);
+					for(int j = 0; j < links.size(); j++){
+						if(links.get(j).getID().equals(msg.getID())){
+							removeLink(links.get(j));
+							break;
+						}
+					}
+					break;
 				default:
 					break;
 			}
@@ -110,15 +134,34 @@ public class Discovery extends Server{
 	}
 	
 	public void registerRouter(RegisterRequest request, Link l){
+		
+		byte status;
+		String information;
+		
+		//Now reply
+		boolean idTaken = false;
+		for(int i = 0; i < routers.size(); i++){
+			if(routers.get(i).getID().equals(request.getID())){
+				idTaken = true;
+				break;
+			}
+		}
+		if(idTaken){
+			status = 1;
+			information = "Registration request failed. That router ID is already registered.";
+		 } else if (l.getIP().equals(request.getIP())){
+			status = 2;
+			information = "Registration request failed. Mismatched IP adresses.";
+		} else {
 		/* Store the router's info */
-		RouterInfo info = new RouterInfo(request.getID(), l.getHostname(), request.getPort());
-		routers.add(info);
-		System.out.println("Router " + routers.get(routers.size()-1).getID() + " is now registered.");
-		l.setID(request.getID());
+			RouterInfo info = new RouterInfo(request.getID(), l.getHostname(), request.getPort());
+			routers.add(info);
+			System.out.println("Router " + routers.get(routers.size()-1).getID() + " is now registered.");
+			l.setID(request.getID());
 
-		/* Now reply */
-		byte status = 0; // sucess!
-		String information = "Registration request sucessful. The number of router currently constituting the CDN is (" + routers.size() + ")";
+			status = 0; // sucess!
+			information = "Registration request sucessful. The number of router currently constituting the CDN is (" + routers.size() + ")";
+		}
 		RegisterResponse response = new RegisterResponse(status, information);
 		l.sendData(response);
 	}
@@ -154,6 +197,12 @@ public class Discovery extends Server{
 		}
 	}
 
+	public void listWeights(){
+		for(int i = 0; i < uniqueConnections.size(); i++){
+			System.out.println(uniqueConnections.get(i));
+		}
+	}
+
 	/* **************************************************************************************************************** */
 	/*                                           CDN setup and support methods                                          */
 	/* **************************************************************************************************************** */
@@ -169,6 +218,7 @@ public class Discovery extends Server{
 			done = noIslands(cdn);
 		}
 		sendPeers(connectionsToSend);
+		updateLinkWeights();
 		if(mstThread != null){
 			mstThread.setDone();
 		}
@@ -271,15 +321,15 @@ public class Discovery extends Server{
 	/* **************************************************************************************************************** */
 
 	public void updateLinkWeights(){
-		ArrayList<LinkInfo> linksToSend = new ArrayList<LinkInfo>();
+		uniqueConnections = new ArrayList<LinkInfo>();
 		boolean addLink;
 		for( int i = 0; i < links.size(); i++){
 			ArrayList<RouterInfo> connections = cdn.get(links.get(i).getID());
 			for( int k = 0; k < connections.size(); k++){
 				addLink = true;
-				for(int j = 0; j < linksToSend.size(); j++){
-					RouterInfo me = linksToSend.get(j).hasRouter(routers.get(i));
-					RouterInfo peer = linksToSend.get(j).hasRouter(connections.get(k));
+				for(int j = 0; j < uniqueConnections.size(); j++){
+					RouterInfo me = uniqueConnections.get(j).hasRouter(routers.get(i));
+					RouterInfo peer = uniqueConnections.get(j).hasRouter(connections.get(k));
 					if(me != null && peer != null){
 						addLink = false;
 						break;
@@ -292,16 +342,16 @@ public class Discovery extends Server{
 					while(w < 1){
 						w = r.nextInt(11);
 					}
-					linksToSend.add(new LinkInfo(getRouterInfo(links.get(i).getID()),getRouterInfo(connections.get(k).getID()), w));
+					uniqueConnections.add(new LinkInfo(getRouterInfo(links.get(i).getID()),getRouterInfo(connections.get(k).getID()), w));
 				} 
 			}
 		}
 		/* Testing output */
 		//TODO: Remove me probably
-		for(int i = 0; i < linksToSend.size(); i++){
-			System.out.println(linksToSend.get(i));
+		for(int i = 0; i < uniqueConnections.size(); i++){
+			System.out.println(uniqueConnections.get(i));
 		}
-		sendWeights(new LinkWeightUpdate(linksToSend));
+		sendWeights(new LinkWeightUpdate(uniqueConnections));
 		
 	}
 	
@@ -317,10 +367,18 @@ public class Discovery extends Server{
 
 	/* The main thread handles command line messages */
 	public static void main(String args[]){
+		if(args.length != 1 && args.length != 2){
+			System.out.println("Usage: java cdn.node.Discovery <port number> <update interval>");
+			System.exit(1);
+		}
+		
 		Scanner in = new Scanner(args[0]);
 		int port = in.nextInt();
-		in = new Scanner(args[1]);
-		int sleep = in.nextInt();
+		int sleep = 120;
+		if(args.length == 2){
+			in = new Scanner(args[1]);
+			sleep = in.nextInt();
+		}
 		Discovery discovery = new Discovery(port);
 
 		in = new Scanner(System.in);
@@ -335,14 +393,21 @@ public class Discovery extends Server{
 				tmp.useDelimiter(" ");
 				tmp.next();
 				discovery.setupCDN(tmp.nextInt(), sleep);
-			} else if (cmd.equals("update")){
-				//TODO take me out
-				discovery.updateLinkWeights();
+			} else if (cmd.equals("list-weights")){
+				discovery.listWeights();
 			} else if (cmd.equals("close")){
 				discovery.close();
 				break;
+			} else if (cmd.equals("help")){
+				System.out.println("Valid commands are:");
+				System.out.println("	close");
+				System.out.println("	help");
+				System.out.println("	list-routers");
+				System.out.println("	list-weights");
+				System.out.println("	setup-cdn");
+				System.out.println("	setup-cdn <number of connections per router>");
 			} else {
-				System.out.println("Command unrecognized");
+				System.out.println("invalid command. for help, type \"help\"");
 			}
 		}
 	

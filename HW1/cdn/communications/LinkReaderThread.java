@@ -52,12 +52,14 @@ public class LinkReaderThread extends Thread{
 					try{
 						din.readFully(msg);
 					} catch (IOException e){
-						System.out.println("LinkReaderThread: failed to read from input stream");
+						link.close();
+						break;
 					}
 					link.deliverMessage(msg);
 				}
 			} catch (IOException e){
-				System.out.println( " Router " + link.getID() + " could not read from socket");
+				link.close();
+				break;
 			}
 		}
 	}

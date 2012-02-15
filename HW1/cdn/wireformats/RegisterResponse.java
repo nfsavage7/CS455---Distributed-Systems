@@ -40,6 +40,10 @@ public class RegisterResponse extends Message{
 	public String getInfo(){
 		return info;
 	}
+
+	public byte getStatus(){
+		return status;
+	}
 	
 	/* **************************************************************************************************************** */
 	/*                                           Packing and unpacking methods                                          */

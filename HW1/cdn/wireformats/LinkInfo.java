@@ -50,7 +50,7 @@ public class LinkInfo extends Message {
 	}
 	
 	public String toString(){
-		return "Router " + routerOne.getID() + " is connected to Router " + routerTwo.getID() + " weight:" + weight;
+		return routerOne.getID() + " " + routerTwo.getID() + " " + weight + " " + routerOne.getHostName() + ":" + routerOne.getPort() + " " + routerTwo.getHostName() + ":" + routerTwo.getPort();
 }
 
 	//DO NOT MARSHALL TYPE!!!!!!
