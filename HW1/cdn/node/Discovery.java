@@ -9,6 +9,7 @@ import java.io.*;
 import cdn.wireformats.*;
 import cdn.communications.Link;
 import cdn.communications.ConnectionAccepterThread;
+import cdn.mst.MstUpdateThread;
 
 /* ************************************************************************************************************************ */
 /*                                                    Discovery node class                                                  */
@@ -25,6 +26,7 @@ public class Discovery extends Server{
 	/* **************************************************************************************************************** */
 
 	private int port;
+	private MstUpdateThread mstThread;
 	private ArrayList<Link> links = new ArrayList<Link>();
 	private ArrayList<RouterInfo> routers = new ArrayList<RouterInfo>();
 	private HashMap<String, ArrayList<RouterInfo>> cdn;
@@ -156,7 +158,7 @@ public class Discovery extends Server{
 	/*                                           CDN setup and support methods                                          */
 	/* **************************************************************************************************************** */
 
-	public void setupCDN(int numConnections){
+	public void setupCDN(int numConnections, int sleep){
 		boolean done = false;
 		HashMap<String, ArrayList<RouterInfo>> connectionsToSend = new HashMap<String, ArrayList<RouterInfo>>() ;
 		while(!done){
@@ -167,6 +169,10 @@ public class Discovery extends Server{
 			done = noIslands(cdn);
 		}
 		sendPeers(connectionsToSend);
+		if(mstThread != null){
+			mstThread.setDone();
+		}
+		mstThread = new MstUpdateThread(sleep, this);
 	}
 
 	public HashMap<String, ArrayList<RouterInfo>>  calculateCDN(int numConnections){
@@ -312,7 +318,10 @@ public class Discovery extends Server{
 	/* The main thread handles command line messages */
 	public static void main(String args[]){
 		Scanner in = new Scanner(args[0]);
-		Discovery discovery = new Discovery(in.nextInt());
+		int port = in.nextInt();
+		in = new Scanner(args[1]);
+		int sleep = in.nextInt();
+		Discovery discovery = new Discovery(port);
 
 		in = new Scanner(System.in);
 		while(in.hasNextLine()){
@@ -320,12 +329,12 @@ public class Discovery extends Server{
 			if(cmd.equals("list-routers")){
 				discovery.printRouterInfo();
 			} else if (cmd.equals("setup-cdn")){
-				discovery.setupCDN(4);
+				discovery.setupCDN(4, sleep);
 			} else if (cmd.startsWith("setup-cdn ")){
 				Scanner tmp = new Scanner(cmd);
 				tmp.useDelimiter(" ");
 				tmp.next();
-				discovery.setupCDN(tmp.nextInt());
+				discovery.setupCDN(tmp.nextInt(), sleep);
 			} else if (cmd.equals("update")){
 				//TODO take me out
 				discovery.updateLinkWeights();
