@@ -91,10 +91,6 @@ public class Router extends Server{
 					messages.add(new RouterInfo(msg));
 					linksForMessages.add(l);
 					break;
-				case Message.CHAT:
-					messages.add(new ChatMessage(msg));
-					linksForMessages.add(l);
-					break;
 				case Message.REGISTER_RESPONSE:
 					messages.add(new RegisterResponse(msg));
 					linksForMessages.add(l);
@@ -127,9 +123,6 @@ public class Router extends Server{
 					case Message.ROUTER_INFO:
 						gotRouterInfo(((RouterInfo)(messages.get(i))), linksForMessages.get(i));
 						break;
-					case Message.CHAT:
-						gotChatMessage((ChatMessage)(messages.get(i)));
-						break;
 					case Message.REGISTER_RESPONSE:
 						gotRegisterResponse((RegisterResponse)(messages.get(i)));
 						break;
@@ -153,12 +146,10 @@ public class Router extends Server{
 	public void gotRouterInfo(RouterInfo i, Link l){
 		System.out.println("Connected to Router " + i.getID());
 		l.setID(i.getID());
-		//Honestly, I'm not sure I need this...
 	}
 	
-	//TODO take this out once I have real data
 	public void gotChatMessage(ChatMessage msg){
-		System.out.println(msg.getPayload());
+	//	System.out.println(msg.getPayload());
 	}
 	
 	public void gotRegisterResponse(RegisterResponse msg){
@@ -176,7 +167,6 @@ public class Router extends Server{
 		}
 	}
 
-	//TODO try to streamline this and regWithDiscovery
 	public void initalizeConnection(String host, int servPort, String servID){
 		try{
 			Link l = new Link(new Socket(host, servPort), this);
@@ -184,7 +174,7 @@ public class Router extends Server{
 			addLink(l);
 			RouterInfo myInfo = new RouterInfo(ID, hostname, port);
 			l.sendData(myInfo);
-			System.out.println("Connected to " + servID);
+			System.out.println("Connected to Router" + servID);
 		} catch (Exception e) {
 			discovery.sendData(new RemoveLink(servID));
 		}
@@ -207,11 +197,6 @@ public class Router extends Server{
 		tracker++;
 		System.out.println("Data from Router " + l.getID() + " Tracker: " + msg.getTracker());
 		ArrayList<String> peers = msg.getRoutes(ID);
-		if(peers == null){
-			System.out.println("Leaf");
-		} else {
-			System.out.println(peers);
-		}
 		int count = 0;
 		for(int i = 0; i < links.size() && peers != null; i++){
 			if(peers.contains(links.get(i).getID())){
@@ -230,7 +215,6 @@ public class Router extends Server{
 		discovery.sendData(new DeregisterRequest(IP, port, ID));
 	}
 
-	//TODO take me out
 	public void flood(ChatMessage msg){
 	//	System.out.println("My links: " + links.size());
 		for(int i = 1; i < links.size(); i++){
@@ -239,7 +223,6 @@ public class Router extends Server{
 		}
 	}
 
-	//TODO take me out
 	public void sendData(){
 		tracker++;
 		ArrayList<String> connections = mst.get(ID);
@@ -262,24 +245,40 @@ public class Router extends Server{
 
 	/* The main thread hands command line messages */
 	public static void main(String args[]){
+		if( args.length != 4){
+			System.out.println("Usage: java cdn.node.Router <id> <port> <discovery host> <discovery port>");
+			System.exit(1);
+		}
 		Scanner in = new Scanner(args[1]);
-		int port = in.nextInt();
-		in = new Scanner(args[3]);
-		int discoveryPort = in.nextInt();
+		int port = 0, discoveryPort = 0;
+		try{
+			port = in.nextInt();
+			in = new Scanner(args[3]);
+			discoveryPort = in.nextInt();
+		} catch (Exception e){
+			System.out.println("Usage: java cdn.node.Router <id> <port> <discovery host> <discovery port>");
+			System.exit(1);
+			
+		}
 		Router router = new Router(args[0], "localhost", port, args[2], discoveryPort);
 		
 		in = new Scanner(System.in);
 		while(in.hasNextLine()){
-			//TODO add in router commands
 			String cmd = in.nextLine();
 			if(cmd.equals("exit-cdn")){
 				router.deregister();
 			} else if (cmd.equals("print-mst")){
 				router.printMST();
-			} else if (cmd. equals("send-data")){
+			} else if (cmd.equals("send-data")){
 				router.sendData();
+			} else if (cmd.equals("help")){
+				System.out.println("Valid commands are:");
+				System.out.println("	exit-cdn");
+				System.out.println("	help");
+				System.out.println("	print-mst");
+				System.out.println("	send-data");
 			} else {
-				router.flood(new ChatMessage(cmd));
+				System.out.println("Invalid command. for help, please type \"help\"");
 			}
 		}
 

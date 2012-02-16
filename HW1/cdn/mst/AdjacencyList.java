@@ -42,11 +42,9 @@ public class AdjacencyList{
 			} else {
 				adjLst.put(l.getRouterOne().getID(), msg.getLinks(l.getRouterOne(), numConnections));
 				done.add(l.getRouterOne().getID());
-				//System.out.println(done.get(done.size()-1) + ": " + adjLst.get(done.get(done.size()-1)));
 				adjLst.put(l.getRouterTwo().getID(), msg.getLinks(l.getRouterTwo(), numConnections));
 				done.add(l.getRouterTwo().getID());
 			}
-			//System.out.println(done.get(done.size()-1) + ": " + adjLst.get(done.get(done.size()-1)));
 		}
 		
 	}
@@ -63,7 +61,6 @@ public class AdjacencyList{
 		ArrayList<Edge> edges = adjLst.get(r);
 		Edge min = null;
 		if( edges == null ){
-			System.out.println("null");
 			return min;
 		}
 		for(int i = 0; i < edges.size(); i++){
@@ -77,21 +74,18 @@ public class AdjacencyList{
 				min = edges.get(i);
 			}
 		}
-		//System.out.println("getMinEdge:" + min);
 		return min;
 	}
 
 	public Edge getEdge(String from, String to){
 		ArrayList<Edge> edges = adjLst.get(from);
 		Edge ret = null;
-		//System.out.println(edges.size());
 		for(int i = 0; i < edges.size(); i++){
 			if(edges.get(i).getVertex().equals(to)){
 				ret = edges.get(i);
 				break;
 			}
 		}
-		//System.out.println("makring link from " + from + " to " + to);
 		return ret;
 	}
 	

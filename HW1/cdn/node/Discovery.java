@@ -269,13 +269,6 @@ public class Discovery extends Server{
 			cdn.put(l.getID(), peers);
 			connectionsToSend.put(l.getID(), peersToSend);
 
-			/* debugging the cdn. TODO this is to be taken out */
-		/*	System.out.println("Connections for router " + l.getID());
-			for(int j = 0; j < peers.size(); j ++){
-				System.out.print( peers.get(j).getID() + " " );
-			}
-			System.out.print("\n");
-		*/
 		}
 		return connectionsToSend;
 	}
@@ -307,7 +300,6 @@ public class Discovery extends Server{
 	public void sendPeers(HashMap<String, ArrayList<RouterInfo>> connectionsToSend){
 		for(int i = 0; i < links.size(); i++){
 			if(connectionsToSend.containsKey(links.get(i).getID())){
-				System.out.println("Sending peers to router " + links.get(i).getID());
 				if(connectionsToSend.get(links.get(i).getID()).size() > 0){
 					PeerRouterList list = new PeerRouterList(connectionsToSend.get(links.get(i).getID()));
 					links.get(i).sendData(list);
@@ -346,12 +338,8 @@ public class Discovery extends Server{
 				} 
 			}
 		}
-		/* Testing output */
-		//TODO: Remove me probably
-		for(int i = 0; i < uniqueConnections.size(); i++){
-			System.out.println(uniqueConnections.get(i));
-		}
 		sendWeights(new LinkWeightUpdate(uniqueConnections));
+		System.out.println("Updated the link weights");
 		
 	}
 	

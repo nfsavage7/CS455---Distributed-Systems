@@ -63,7 +63,7 @@ public class Link{
 				LinkSenderThread sender = new LinkSenderThread(msg, sock, this);
 				sender.start();
 			} else {
-				System.out.println("Unable to send message. Connections is already closed");
+				System.out.println("Unable to send message. Connection is already closed");
 			}
 		} catch (Exception e){}
 	}

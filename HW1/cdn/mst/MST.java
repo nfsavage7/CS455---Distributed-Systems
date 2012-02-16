@@ -72,9 +72,8 @@ public class MST{
 			}
 				
 		}
-		//TODO pretty this message up
 		if(routers < numNodes){
-			System.out.println("MST::Prim: something isn't right");
+			System.out.println("MST::Prim: Unable to compute MST");
 		}
 	}
 
