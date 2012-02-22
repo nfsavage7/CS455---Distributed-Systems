@@ -56,7 +56,8 @@ public class Worker extends Thread{
 	public void run(){
 		while(true){
 			if(haveNewTask()){
-				System.out.println(task);
+				//System.out.println(task);
+				task.execute();
 				try{
 					Thread.sleep(100);
 				} catch (Exception e){}

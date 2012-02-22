@@ -1,33 +1,44 @@
+/* pacakge statement */
 package cs455.scaling.tasks;
+
 /* java imports */
+import java.nio.channels.SelectionKey;
 
 /* local imports */ 
+import cs455.scaling.server.Server;
 
 /* ************************************************************************************************************************ */
-/*                                                            Task                                                          */
-/*                                                          --------                                                        */
+/*                                                   Accept Connection Task                                                 */
+/*                                                 --------------------------                                               */
 /* 						     Author: Nicholas Franklin Savage                                       */
 /*                                                   Class:  CS 455: Into to Distributed Systems                            */
 /*						     Department of Conupter Science at Colorado State University            */
-/*														            */
-/* 	This is the Task class. Everytime the Thread Pool Manager gets a task, it will add one of these to it's quque	    */
+/* 	This is the Accept Connection Task. This is generated when the server has an incomming connection.                  */
 /* ************************************************************************************************************************ */
 
-public abstract class Task{ 			//TODO: This will most likely be abstract
+public class AcceptConnectionTask extends Task{
 
 	/* **************************************************************************************************************** */
 	/*                                                Member variables                                                  */
 	/* **************************************************************************************************************** */
 
+	private Server server;
+	private SelectionKey key;
 
 	/* **************************************************************************************************************** */
 	/*                                    Constructors and other inital methods                                         */
 	/* **************************************************************************************************************** */
-	
+
+	public AcceptConnectionTask(Server s, SelectionKey k){
+		server = s;
+		key = k;
+	}
 
 	/* **************************************************************************************************************** */
 	/*                                            Getter and setter methods                                             */
 	/* **************************************************************************************************************** */
 
-	abstract public void execute();
+	public void execute(){
+		server.accept(key);
+	}
 }

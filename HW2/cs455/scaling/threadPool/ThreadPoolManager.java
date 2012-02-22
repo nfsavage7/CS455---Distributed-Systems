@@ -43,6 +43,7 @@ public class ThreadPoolManager{
 
 	public void addTask(Task t){
 		taskQueue.offer(t);
+		assignTasks();
 	}
 
 	public void assignTasks(){
@@ -73,18 +74,18 @@ public class ThreadPoolManager{
 	}
 
 	/* This is just here for testing purposes */
-	public static void main(String[] args){
+/*	public static void main(String[] args){
 		System.out.println("Arg: " + args[0]);
 		Scanner in = new Scanner(args[0]);
 		ThreadPoolManager manager = new ThreadPoolManager(in.nextInt());
 		
 		/* Let's do this thing */
-		for(int i = 0; i < 100; i++){
+/*		for(int i = 0; i < 100; i++){
 			Task t = new Task(i);
 			manager.addTask(t);
 		}
 		manager.assignTasks();
 		
-	}
+	}*/
 
 }
