@@ -57,7 +57,7 @@ public class Server{
 
 	public synchronized Set getKeys(){
 		try{
-			selector.select();
+			selector.selectNow();
 		} catch (Exception e){}
 		return selector.selectedKeys();
 	}
@@ -65,10 +65,11 @@ public class Server{
 	public synchronized void setKeys(SocketChannel sock){
 		System.out.println("Got here");
 		try{
-//			sock.configureBlocking(false);
+			sock.configureBlocking(false);
 			System.out.println("Here");
 			sock.register(selector, sock.validOps());
 		} catch (Exception e){
+			e.printStackTrace();
 			System.out.println("Still not right Boss");
 		}
 	}
@@ -87,7 +88,7 @@ public class Server{
 					System.out.println("Just trying to figure stuff out, ya know?");
 				}
 				if(key.isWritable()){
-					System.out.println("Good job boss");
+				//	System.out.println("Good job boss");
 				}
 			//	try{
 			//		key.channel().close();
