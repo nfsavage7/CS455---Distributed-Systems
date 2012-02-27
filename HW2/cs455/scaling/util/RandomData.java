@@ -43,6 +43,10 @@ public class RandomData{
 	public String getHash(){
 		return SHA1.SHA1FromBytes(data);
 	}
+		
+	public byte[] getBytes(){
+		return data;
+	}
 
 	public String toString(){
 		String ret = "";

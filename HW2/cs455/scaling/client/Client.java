@@ -48,6 +48,14 @@ public class Client{
 	/*                                            Getter and setter methods                                             */
 	/* **************************************************************************************************************** */
 	
+	public void sendMsg(){
+		TransmitionHandler handler = new TransmitionHandler(server, rate);
+		handler.start();
+		try{
+			handler.join();
+		} catch (InterruptedException e){}
+	}
+
 	/* **************************************************************************************************************** */
 	/*                                                     Main                                                         */
 	/* **************************************************************************************************************** */
@@ -64,10 +72,6 @@ public class Client{
 		in = new Scanner(args[2]);
 		int rate = in.nextInt();
 		Client client = new Client(args[0], port, rate);
-		while(true){
-			RandomData data = new RandomData();
-			System.out.println(data);
-			System.out.println();
-		}
+		client.sendMsg();
 	}
 }

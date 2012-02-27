@@ -67,7 +67,7 @@ public class Server{
 		try{
 			sock.configureBlocking(false);
 			System.out.println("Here");
-			sock.register(selector, sock.validOps());
+			sock.register(selector, SelectionKey.OP_READ);
 		} catch (Exception e){
 			e.printStackTrace();
 			System.out.println("Still not right Boss");
@@ -85,8 +85,9 @@ public class Server{
 					accept();
 				}
 				if(key.isReadable()){
-					System.out.println("Just trying to figure stuff out, ya know?");
+					System.out.println("Got Bytes from " + key.channel());
 				}
+				System.out.println(key.readyOps());
 			}
 		}
 	}
@@ -94,10 +95,8 @@ public class Server{
 	public void accept(){
 		try{
 			SocketChannel client = server.accept();
-			//if(client != null){
-				setKeys(client);
-				System.out.println("Got connection from " + client);
-		//	}
+			setKeys(client);
+			System.out.println("Got connection from " + client);
 		} catch (Exception e){
 			System.out.println("Could not connect to client");
 		}

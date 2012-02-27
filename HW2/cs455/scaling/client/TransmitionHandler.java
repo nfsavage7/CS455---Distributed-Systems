@@ -2,6 +2,8 @@
 package cs455.scaling.client;
 
 /* java imports */
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 /* local imports */
 import cs455.scaling.util.RandomData;
@@ -16,18 +18,45 @@ import cs455.scaling.util.RandomData;
 /* sends back                                                                                                               */
 /* ************************************************************************************************************************ */
 
-public class TransmisionHandler{
+public class TransmitionHandler extends Thread{
 
 	/* **************************************************************************************************************** */
 	/*                                                Member variables                                                  */
 	/* **************************************************************************************************************** */
 
+	private SocketChannel server;
+	private int sleep;
+
 	/* **************************************************************************************************************** */
 	/*                                    Constructors and other inital methods                                         */
 	/* **************************************************************************************************************** */
 
+	public TransmitionHandler(SocketChannel serv, int rate){
+		server = serv;
+		sleep = 1000/rate;
+	}
+
 	/* **************************************************************************************************************** */
 	/*                                            Getter and setter methods                                             */
 	/* **************************************************************************************************************** */
+
+	public void run(){
+		int i = 0;
+		while(true){
+			i++;
+			System.out.println("Sent " + i);
+			RandomData data = new RandomData();
+			ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
+			try{
+				int bytes = server.write(buffer);
+				System.out.println(bytes);
+			} catch(Exception e){
+				System.out.println("TransmitionHandler::run: could not write to the socket chanel");
+			}
+			try{
+				sleep(sleep);
+			} catch (InterruptedException e){}
+		}
+	}
 
 }
