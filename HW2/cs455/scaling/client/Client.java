@@ -5,7 +5,9 @@ package cs455.scaling.client;
 import java.util.Scanner;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
+
 /* local imports */ 
+import cs455.scaling.util.RandomData;
 
 /* ************************************************************************************************************************ */
 /*                                                          Client                                                          */
@@ -62,6 +64,10 @@ public class Client{
 		in = new Scanner(args[2]);
 		int rate = in.nextInt();
 		Client client = new Client(args[0], port, rate);
-		while(true){}
+		while(true){
+			RandomData data = new RandomData();
+			System.out.println(data);
+			System.out.println();
+		}
 	}
 }

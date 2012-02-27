@@ -13,7 +13,7 @@ import java.util.Set;
 
 /* local imports */ 
 import cs455.scaling.threadPool.ThreadPoolManager;
-import cs455.scaling.tasks.AcceptConnectionTask;
+//import cs455.scaling.tasks.AcceptConnectionTask;
 
 /* ************************************************************************************************************************ */
 /*                                                           Server                                                         */
@@ -82,31 +82,24 @@ public class Server{
 				SelectionKey key = (SelectionKey)iter.next();
 				iter.remove();
 				if(key.isAcceptable()){
-					manager.addTask(new AcceptConnectionTask(this, key));
+					accept();
 				}
 				if(key.isReadable()){
 					System.out.println("Just trying to figure stuff out, ya know?");
 				}
-				if(key.isWritable()){
-				//	System.out.println("Good job boss");
-				}
-			//	try{
-			//		key.channel().close();
-			//	} catch(Exception e){}
 			}
 		}
 	}
 
-	public void accept(SelectionKey key){
+	public void accept(){
 		try{
 			SocketChannel client = server.accept();
-			if(client != null){
+			//if(client != null){
 				setKeys(client);
 				System.out.println("Got connection from " + client);
-			}
-		//	key.channel().
+		//	}
 		} catch (Exception e){
-			//System.out.println("Could not connect to client");
+			System.out.println("Could not connect to client");
 		}
 	}
 
