@@ -1,5 +1,7 @@
 package cs455.scaling.tasks;
+
 /* java imports */
+import java.nio.channels.SelectionKey;
 
 /* local imports */ 
 
@@ -29,5 +31,10 @@ public abstract class Task{ 			//TODO: This will most likely be abstract
 	/*                                            Getter and setter methods                                             */
 	/* **************************************************************************************************************** */
 
+	public boolean equals(Task t){
+		return t.getSelectionKey().equals(this.getSelectionKey());
+	}
+
+	abstract public SelectionKey getSelectionKey();
 	abstract public void execute();
 }

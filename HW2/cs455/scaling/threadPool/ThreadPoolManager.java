@@ -3,7 +3,7 @@ package cs455.scaling.threadPool;
 /* java imports */
 import java.util.Queue;
 import java.util.LinkedList;
-import java.util.Scanner; //TODO take this one out plz
+import java.util.ListIterator;
 
 /* Local imports */
 import cs455.scaling.tasks.*;
@@ -42,6 +42,14 @@ public class ThreadPoolManager{
 	/* **************************************************************************************************************** */
 
 	public void addTask(Task t){
+		ListIterator iter = ((LinkedList)(taskQueue)).listIterator(0);
+		while(iter.hasNext()){
+			Task tmp = (Task)iter.next();
+			iter.remove();
+			if(tmp.equals(t)){
+				return;
+			}
+		}
 		taskQueue.offer(t);
 		assignTasks();
 	}
@@ -68,24 +76,8 @@ public class ThreadPoolManager{
 	protected synchronized void workerFinished(Worker worker){
 		workerQueue.offer(worker);
 		if(taskQueue.size() > 0){
-			//TODO implement this
 			assignTasks();
 		}
 	}
-
-	/* This is just here for testing purposes */
-/*	public static void main(String[] args){
-		System.out.println("Arg: " + args[0]);
-		Scanner in = new Scanner(args[0]);
-		ThreadPoolManager manager = new ThreadPoolManager(in.nextInt());
-		
-		/* Let's do this thing */
-/*		for(int i = 0; i < 100; i++){
-			Task t = new Task(i);
-			manager.addTask(t);
-		}
-		manager.assignTasks();
-		
-	}*/
 
 }
