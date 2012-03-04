@@ -12,29 +12,14 @@ import java.nio.channels.SelectionKey;
 /*                                                   Class:  CS 455: Into to Distributed Systems                            */
 /*						     Department of Conupter Science at Colorado State University            */
 /*														            */
-/* 	This is the Task class. Everytime the Thread Pool Manager gets a task, it will add one of these to it's quque	    */
+/* 	This is the Task interface. Everytime the Thread Pool Manager gets a task, it will add one of these to it's quque   */
 /* ************************************************************************************************************************ */
 
-public abstract class Task{ 			//TODO: This will most likely be abstract
+public interface Task{
 
 	/* **************************************************************************************************************** */
-	/*                                                Member variables                                                  */
+	/*                                                Abstract Methods                                                  */
 	/* **************************************************************************************************************** */
 
-
-	/* **************************************************************************************************************** */
-	/*                                    Constructors and other inital methods                                         */
-	/* **************************************************************************************************************** */
-	
-
-	/* **************************************************************************************************************** */
-	/*                                            Getter and setter methods                                             */
-	/* **************************************************************************************************************** */
-
-	public boolean equals(Task t){
-		return t.getSelectionKey().equals(this.getSelectionKey());
-	}
-
-	abstract public SelectionKey getSelectionKey();
-	abstract public void execute();
+	void execute();
 }

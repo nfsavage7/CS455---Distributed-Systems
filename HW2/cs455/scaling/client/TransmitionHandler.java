@@ -42,14 +42,14 @@ public class TransmitionHandler extends Thread{
 
 	public void run(){
 		int i = 0;
-		while(true){
+		while(i < 5){
 			i++;
 			System.out.println("Sent " + i);
 			RandomData data = new RandomData();
 			ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
 			try{
 				int bytes = server.write(buffer);
-				System.out.println(bytes);
+				System.out.println("Sending: " + data.getHash());
 			} catch(Exception e){
 				System.out.println("TransmitionHandler::run: could not write to the socket chanel");
 			}

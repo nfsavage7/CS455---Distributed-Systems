@@ -13,7 +13,9 @@ import java.util.Set;
 
 /* local imports */ 
 import cs455.scaling.threadPool.ThreadPoolManager;
-//import cs455.scaling.tasks.AcceptConnectionTask;
+import cs455.scaling.tasks.ReadTask;
+import cs455.scaling.util.RandomData;
+import cs455.scaling.tasks.WriteTask;
 
 /* ************************************************************************************************************************ */
 /*                                                           Server                                                         */
@@ -74,6 +76,18 @@ public class Server{
 		}
 	}
 
+	public synchronized void deregister(SelectionKey key){
+		if(key.isValid()){
+			key.cancel();
+		}
+		System.out.println("Deregister");
+	}
+
+	public void write(RandomData data, SocketChannel dest){
+		WriteTask task = new WriteTask(data, dest);
+		manager.addTask(task);
+	}
+
 	public void listen(){
 		while(true){
 			Set keys = getKeys();
@@ -81,13 +95,16 @@ public class Server{
 			while(iter.hasNext()){
 				SelectionKey key = (SelectionKey)iter.next();
 				iter.remove();
-				if(key.isAcceptable()){
+				if(key.isValid() && key.isAcceptable()){
 					accept();
 				}
-				if(key.isReadable()){
-					System.out.println("Got Bytes from " + key.channel());
+				if(key.isValid() && key.isReadable()){
+					if(key.attachment() == null){
+						ReadTask task = new ReadTask(key, this);
+						key.attach(task);
+						manager.addTask(task);
+					}
 				}
-				System.out.println(key.readyOps());
 			}
 		}
 	}
