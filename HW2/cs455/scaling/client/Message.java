@@ -2,66 +2,54 @@
 package cs455.scaling.client;
 
 /* java imports */
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
-/* local imports */
-import cs455.scaling.util.RandomData;
+/* local imports */ 
 
 /* ************************************************************************************************************************ */
-/*                                                     Transmision Handler                                                  */
-/*                                                   -----------------------                                                */
+/*                                                          Message                                                         */
+/*                                                        -----------                                                       */
 /* 						     Author: Nicholas Franklin Savage                                       */
 /*                                                   Class:  CS 455: Into to Distributed Systems                            */
 /*						     Department of Conupter Science at Colorado State University            */
-/* 	This class sends the messages to the server at the specified intervals. It also tracks the hashes that the server   */
-/* sends back                                                                                                               */
+/* 	This is the Message class. It is used as a way to track the hashes that are being sent back from the server         */
 /* ************************************************************************************************************************ */
 
-public class TransmitionHandler extends Thread{
+public class Message{
 
 	/* **************************************************************************************************************** */
 	/*                                                Member variables                                                  */
 	/* **************************************************************************************************************** */
 
-	private Client client;
-	private SocketChannel server;
-	private int sleep;
+	private String hash;
+	private int ID;
 
 	/* **************************************************************************************************************** */
 	/*                                    Constructors and other inital methods                                         */
 	/* **************************************************************************************************************** */
 
-	public TransmitionHandler(Client c, SocketChannel serv, int rate){
-		client = c;
-		server = serv;
-		sleep = 1000/rate;
+	public Message (String h, int id){
+		hash = h;
+		ID = id;
 	}
 
 	/* **************************************************************************************************************** */
 	/*                                            Getter and setter methods                                             */
 	/* **************************************************************************************************************** */
 
-	public void run(){
-		int i = 0, count = 1;
-		while(i < 5){
-			i++;
-			System.out.println("Sent " + i);
-			RandomData data = new RandomData();
-			ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
-			try{
-				int bytes = server.write(buffer);
-				System.out.println("Sending: " + data.getHash());
-				Message msg = new Message(data.getHash(), count);
-				client.addMessage(msg);
-				count++;
-			} catch(Exception e){
-				System.out.println("TransmitionHandler::run: could not write to the socket chanel");
-			}
-			try{
-				sleep(sleep);
-			} catch (InterruptedException e){}
-		}
+	public String getHash(){
+		return hash;
+	}
+	
+	public int getID(){
+		return ID;
+	}
+
+	public boolean equals(Message msg){
+		return hash.equals(msg.getHash());
+	}
+
+	public String toString(){
+		return hash;
 	}
 
 }

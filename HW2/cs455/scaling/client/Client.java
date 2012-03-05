@@ -4,6 +4,8 @@ package cs455.scaling.client;
 /* java imports */
 import java.util.Scanner;
 import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
@@ -33,7 +35,7 @@ public class Client{
 	private SocketChannel server;
 	private int rate;
 	private Selector selector;
-	private LinkedList<String> pendingHashes = new LinkedList<String>();
+	private LinkedList<Message> pendingHashes = new LinkedList<Message>();
 
 	/* **************************************************************************************************************** */
 	/*                                    Constructors and other inital methods                                         */
@@ -42,6 +44,7 @@ public class Client{
 	public Client(String host, int port, int r){
 		try{
 			InetSocketAddress servIP = new InetSocketAddress(host, port);
+			System.out.println("Client at " + servIP.socket().getRemoteSocketAddress().getHostName() + " running");
 			server = SocketChannel.open(servIP);
 			server.configureBlocking(false);
 			selector = Selector.open();
@@ -51,7 +54,6 @@ public class Client{
 			System.out.println("Client:: Failed to connect to server");
 			System.exit(1);
 		}
-		System.out.println("Server: " + server);
 		rate = r;
 	}
 
@@ -60,16 +62,20 @@ public class Client{
 	/* **************************************************************************************************************** */
 	
 	public void sendMsg(){
-		TransmitionHandler handler = new TransmitionHandler(server, rate);
+		TransmitionHandler handler = new TransmitionHandler(this, server, rate);
 		handler.start();
 	}
 
-	public  int bytesToInt(byte[] bytes){
+	private int bytesToInt(byte[] bytes){
 		ByteBuffer buffer = ByteBuffer.allocateDirect(4);
 		for(int i = 0; i < bytes.length; i++){
 			buffer.put(bytes[i]);
 		}
 		return buffer.getInt(0);
+	}
+	
+	public synchronized void addMessage(Message msg){
+		pendingHashes.offer(msg);
 	}
 
 	public void listen(){
@@ -91,14 +97,31 @@ public class Client{
 						int bytesToRead = bytesToInt(buff.array());
 						buff = ByteBuffer.allocate(bytesToRead);
 						bytes = server.read(buff);
-						System.out.println("Received: " + new String(buff.array()));
+						Message msg = getMessage(new String(buff.array()));
+						System.out.println("[Msg-" + msg.getID() + "] Reveived: " + msg);
+						if(pendingHashes.remove(msg)){
+							System.out.println("[ClientStatus] Message " + msg.getID() + " transmitted correctly");
+						} else {
+							System.out.println("[ClientStatus] Unrecognized hash");
+						}
+						System.out.println();
 					} catch (Exception e){
+						e.printStackTrace();
 						System.out.println("Read isn't workign right Boss");
 					}
 				}
 			}
 		}
 	}
+	
+	private synchronized Message getMessage(String hash){
+		for(Message msg : pendingHashes){
+			if(msg.getHash().equals(hash)){
+				return msg;
+			}
+		}
+		return null;
+}
 
 	/* **************************************************************************************************************** */
 	/*                                                     Main                                                         */
