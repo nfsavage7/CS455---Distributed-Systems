@@ -5,6 +5,7 @@ package cs455.scaling.tasks;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.ByteBuffer;
+import java.net.InetAddress;
 
 /* local imports */
 import cs455.scaling.server.Server;
@@ -43,31 +44,42 @@ public class ReadTask implements Task{
 	/*                                            Getter and setter methods                                             */
 	/* **************************************************************************************************************** */
 
+	private String getHostName(){
+		String full = ((InetAddress)(source.socket().getInetAddress())).getHostName();
+		return full.substring(0, full.indexOf("."));
+	}
+
 	/* **************************************************************************************************************** */
 	/*                                              Overwritten methods                                                 */
 	/* **************************************************************************************************************** */
 
-	public void execute(){
+	public void execute(String worker){
 		//Read in the data and create a RandomData
 		//Create a WriteTask for that Data
 		//Return the WriteTask to the server who will put it in the thread pool
 		
 		ByteBuffer buffer = ByteBuffer.allocate(8192);
 		try{
-			int bytes = source.read(buffer);
-			if(bytes == -1){
-				server.deregister(key);
-			} else if (bytes > 0) {
-				key.attach(null);
-				RandomData data = new RandomData(buffer.array());
-				System.out.println("Read " + data.getHash());
-				server.write(data, source);
-			} else {
-				System.out.println("Bytes: " + bytes);
-				key.attach(null);
+			synchronized(source){
+				int bytes = source.read(buffer);
+				if(bytes == -1){
+					server.deregister(key);
+				} else if (bytes > 0) {
+					while(buffer.hasRemaining()){
+						bytes = source.read(buffer);
+					}
+					RandomData data = new RandomData(buffer.array());
+					server.print("[ClientMessage-" + getHostName() + "] Hash: " + data.getHash());
+					server.print("[ServerStatus] Message from Client at " + getHostName() + " handled by " + worker + "\n");
+					server.write(data, source);
+				}
 			}
 		} catch (Exception e){
 			e.printStackTrace();
+		} finally {
+			synchronized(key){
+				key.attach(null);
+			}
 		}
 		
 	}

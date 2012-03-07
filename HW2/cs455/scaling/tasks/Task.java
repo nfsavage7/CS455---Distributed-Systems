@@ -21,5 +21,5 @@ public interface Task{
 	/*                                                Abstract Methods                                                  */
 	/* **************************************************************************************************************** */
 
-	void execute();
+	void execute(String worker);
 }

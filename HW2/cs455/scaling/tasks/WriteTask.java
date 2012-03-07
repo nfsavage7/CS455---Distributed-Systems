@@ -46,16 +46,17 @@ public class WriteTask implements Task{
 	}
 
 
-	public void execute(){
+	public void execute(String worker){
 		ByteBuffer len = ByteBuffer.wrap(intToBytes(data.getHash().length()));
+		len.rewind();
 		ByteBuffer msg = ByteBuffer.wrap(data.getHash().getBytes());
-		System.out.println("Sending: " +data.getHash());
+		msg.rewind();
 		try{
-			dest.write(len);
-			dest.write(msg);
-		} catch (Exception e){
-			System.out.println("WriteTask::execute: failed to send hash to client");
-		}
+			synchronized(dest){
+				dest.write(len);
+				dest.write(msg);
+			}
+		} catch (Exception e){}
 	}
 
 }

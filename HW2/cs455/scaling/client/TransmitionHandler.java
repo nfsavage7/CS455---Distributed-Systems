@@ -44,19 +44,19 @@ public class TransmitionHandler extends Thread{
 
 	public void run(){
 		int i = 0, count = 1;
-		while(i < 5){
+		while(i >= 0){
 			i++;
-			System.out.println("Sent " + i);
 			RandomData data = new RandomData();
 			ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
 			try{
 				int bytes = server.write(buffer);
-				System.out.println("Sending: " + data.getHash());
 				Message msg = new Message(data.getHash(), count);
 				client.addMessage(msg);
 				count++;
 			} catch(Exception e){
-				System.out.println("TransmitionHandler::run: could not write to the socket chanel");
+				System.out.println("Server terminated connection");
+				client.finish();
+				return;
 			}
 			try{
 				sleep(sleep);

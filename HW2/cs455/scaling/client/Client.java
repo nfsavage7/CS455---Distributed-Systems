@@ -8,10 +8,12 @@ import java.util.ListIterator;
 import java.util.LinkedList;
 import java.util.Set;
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.Selector;
 import java.nio.channels.SelectionKey;
 import java.nio.ByteBuffer;
+import java.lang.StringBuffer;
 
 /* local imports */ 
 import cs455.scaling.util.RandomData;
@@ -34,8 +36,12 @@ public class Client{
 
 	private SocketChannel server;
 	private int rate;
+	private long time;
+	private long span = 1000000000;
 	private Selector selector;
 	private LinkedList<Message> pendingHashes = new LinkedList<Message>();
+	private boolean finish = false;
+	private StringBuffer print;
 
 	/* **************************************************************************************************************** */
 	/*                                    Constructors and other inital methods                                         */
@@ -43,12 +49,14 @@ public class Client{
 
 	public Client(String host, int port, int r){
 		try{
+			time = System.nanoTime();
+			print = new StringBuffer();
 			InetSocketAddress servIP = new InetSocketAddress(host, port);
-			System.out.println("Client at " + servIP.socket().getRemoteSocketAddress().getHostName() + " running");
 			server = SocketChannel.open(servIP);
 			server.configureBlocking(false);
 			selector = Selector.open();
 			server.register(selector, SelectionKey.OP_READ);
+			System.out.println("Client at " + InetAddress.getLocalHost().getHostName() + " running");
 		} catch (Exception e){
 			e.printStackTrace();
 			System.out.println("Client:: Failed to connect to server");
@@ -78,40 +86,61 @@ public class Client{
 		pendingHashes.offer(msg);
 	}
 
+	public synchronized void finish(){
+		finish = true;
+	}
+	
+	public synchronized boolean isFinished(){
+		return finish;
+	}
+	
+	public synchronized void print(String str){
+		print.append(str +"\n");
+	}
+
 	public void listen(){
-		while(true){
+		while(!isFinished()){
+			if(System.nanoTime() - time >= span*60){
+				time = System.nanoTime();
+				synchronized(print){
+					System.out.println(print);
+					print = new StringBuffer();
+				}
+			}
 			try{
 				selector.selectNow();
-			} catch (Exception e){
-				System.out.println("Something is wrong with listen Boss");
-			}
+			} catch (Exception e){}
 			Set keys = selector.selectedKeys();
 			Iterator iter = keys.iterator();
 			while(iter.hasNext()){
 				SelectionKey key = (SelectionKey) iter.next();
 				iter.remove();
-				if(key.isReadable()){
-					try{
-						ByteBuffer buff = ByteBuffer.allocate(4);
-						int bytes = server.read(buff);
-						int bytesToRead = bytesToInt(buff.array());
-						buff = ByteBuffer.allocate(bytesToRead);
-						bytes = server.read(buff);
-						Message msg = getMessage(new String(buff.array()));
-						System.out.println("[Msg-" + msg.getID() + "] Reveived: " + msg);
-						if(pendingHashes.remove(msg)){
-							System.out.println("[ClientStatus] Message " + msg.getID() + " transmitted correctly");
-						} else {
-							System.out.println("[ClientStatus] Unrecognized hash");
-						}
-						System.out.println();
-					} catch (Exception e){
-						e.printStackTrace();
-						System.out.println("Read isn't workign right Boss");
+				synchronized(pendingHashes){
+				 	if(key.isReadable() && pendingHashes.size() > 0){
+						try{
+							synchronized(server){
+								ByteBuffer buff = ByteBuffer.allocate(4);
+								int bytes = server.read(buff);
+								int bytesToRead = bytesToInt(buff.array());
+								buff = ByteBuffer.allocate(bytesToRead);
+								while(buff.hasRemaining()){
+									bytes = server.read(buff);
+								}
+								Message msg = getMessage(new String(buff.array()));
+								print("[Msg-" + msg.getID() + "] Received: " + msg);
+									if(pendingHashes.remove(msg)){
+										print("[ClientStatus] Message " + msg.getID() + " transmitted correctly");
+									} else {
+										print("[ClientStatus] Unrecognized hash");
+									}
+							}
+							print("");
+						} catch (Exception e){}
 					}
 				}
 			}
 		}
+		Ssytem.out.println(print);
 	}
 	
 	private synchronized Message getMessage(String hash){

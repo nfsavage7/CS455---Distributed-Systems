@@ -1,0 +1,44 @@
+/*****************************************************************************/
+/*                                Nicholas Franklin Savage                   */
+/*                                CS 455 Assignment 2                        */
+/*                        Colorado State University CS Department            */
+/*                                   Spring 2012                             */
+/*****************************************************************************/
+
+Files included in this tarball
+
+Client package
+	Client
+		This class is in change for spawing a sender thread and to handle responces from the server
+	Message
+		This is a representation of what the servers sends to the client. It encapsulates data about these responces.
+	TransmissionHandler
+		This is the sender thread that sends 8KB of data to the server at the sepecified rate
+
+Server package
+	Server
+		This class is in charge of registering the clients and crateing tasks to be handeled by the thread pool
+	
+Task package
+	Task
+		This is a common interface implemented by all tasks
+	ReadTask
+		This is the calss that reads the data from the clients
+	WriteTask
+		This is the class the responds to the clients
+
+ThreadPool package
+	ThreadPoolManager
+		This is that class that is responsible for assigning tasks to the worker threads
+	Worker
+		This is the thread that preforms the task assigned to it
+
+Util package
+	RandomData
+		This is the class that generates 8KB of random bytes to send
+	SHA1
+		This is the class that computes the hash codes
+
+Please note: I aplogize for the poor doccumentation. My intentions were good in the begining but it ran out of time to finish my commenting scheme.
+
+Another note: I'm not sure how you are going to test this with 100 clients. I had to write a testing class that spawned clients in threads. Please see the main in my Client.java to see how to make it run properly. First you make a Client, then you need to call sendMsg() on it and then listen(0 on it as well. Again, please see the client's main if you are invoking it from your own code. Thank you!

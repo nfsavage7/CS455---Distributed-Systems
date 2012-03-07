@@ -34,27 +34,19 @@ public class ThreadPoolManager{
 			workers[i] = new Worker(this);
 			workerQueue.offer(workers[i]);
 		}
-		System.out.println("Worker Queue size: " + workerQueue.size());
+		System.out.println("Thread Pool size: " + workerQueue.size());
 	}
 
 	/* **************************************************************************************************************** */
 	/*                                               Getter and setter methods                                          */
 	/* **************************************************************************************************************** */
 
-	public void addTask(Task t){
-		ListIterator iter = ((LinkedList)(taskQueue)).listIterator(0);
-		while(iter.hasNext()){
-			Task tmp = (Task)iter.next();
-			iter.remove();
-			if(tmp.equals(t)){
-				return;
-			}
-		}
+	public synchronized void addTask(Task t){
 		taskQueue.offer(t);
 		assignTasks();
 	}
 
-	public void assignTasks(){
+	public synchronized void assignTasks(){
 		while (workerQueue.size() > 0 && taskQueue.size() > 0){
 			Task t = taskQueue.poll();
 			Worker w = workerQueue.poll();

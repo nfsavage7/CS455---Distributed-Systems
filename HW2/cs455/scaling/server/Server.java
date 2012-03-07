@@ -8,8 +8,10 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Set;
+import java.lang.StringBuffer;
 
 /* local imports */ 
 import cs455.scaling.threadPool.ThreadPoolManager;
@@ -35,6 +37,10 @@ public class Server{
 	private ServerSocketChannel server;
 	private Selector selector;
 	private ThreadPoolManager manager;
+	private long time;
+	private long span = 1000000000;
+	private StringBuffer print;
+	private int packets = 0, clients = 0;
 
 	/* **************************************************************************************************************** */
 	/*                                    Constructors and other inital methods                                         */
@@ -42,13 +48,16 @@ public class Server{
 
 	public Server(int port, int numThreads){
 		try{
+			time = System.nanoTime();
+			print = new StringBuffer();
 			server = ServerSocketChannel.open();
 			server.configureBlocking(false);
 			server.socket().bind(new InetSocketAddress(port));
 			selector = Selector.open();
 			server.register(selector, SelectionKey.OP_ACCEPT);
+			System.out.println("Server at " + InetAddress.getLocalHost().getHostName() + " running");
 		} catch (Exception e){
-			System.out.println("Server:: Something broke");
+			System.out.println("Server:: failed to bind to socket");
 		}
 		manager = new ThreadPoolManager(numThreads);
 	}
@@ -65,31 +74,41 @@ public class Server{
 	}
 
 	public synchronized void setKeys(SocketChannel sock){
-		System.out.println("Got here");
 		try{
 			sock.configureBlocking(false);
-			System.out.println("Here");
 			sock.register(selector, SelectionKey.OP_READ);
-		} catch (Exception e){
-			e.printStackTrace();
-			System.out.println("Still not right Boss");
-		}
+		} catch (Exception e){}
+	
 	}
 
 	public synchronized void deregister(SelectionKey key){
 		if(key.isValid()){
 			key.cancel();
 		}
-		System.out.println("Deregister");
 	}
 
 	public void write(RandomData data, SocketChannel dest){
 		WriteTask task = new WriteTask(data, dest);
 		manager.addTask(task);
 	}
+	
+	public synchronized void print(String str){
+		print.append(str + "\n");
+	}
 
 	public void listen(){
 		while(true){
+			if(System.nanoTime() - time >= span*60){
+				time = System.nanoTime();
+				synchronized(print){
+					System.out.println("Total Clients connected: " + clients);
+					System.out.println("Packets/sec: " + packets);
+					packets = 0;
+					System.out.println(print);
+					print = new StringBuffer();
+				}
+			}
+
 			Set keys = getKeys();
 			Iterator iter = keys.iterator();
 			while(iter.hasNext()){
@@ -99,10 +118,13 @@ public class Server{
 					accept();
 				}
 				if(key.isValid() && key.isReadable()){
-					if(key.attachment() == null){
-						ReadTask task = new ReadTask(key, this);
-						key.attach(task);
-						manager.addTask(task);
+					synchronized(key){
+						if(key.attachment() == null){
+							ReadTask task = new ReadTask(key, this);
+							packets++;
+							key.attach(task);
+							manager.addTask(task);
+						}
 					}
 				}
 			}
@@ -113,7 +135,7 @@ public class Server{
 		try{
 			SocketChannel client = server.accept();
 			setKeys(client);
-			System.out.println("Got connection from " + client);
+			clients++;
 		} catch (Exception e){
 			System.out.println("Could not connect to client");
 		}
